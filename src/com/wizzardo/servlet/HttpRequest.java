@@ -1,13 +1,17 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.http.MultiValue;
 import com.wizzardo.http.request.Request;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -15,7 +19,15 @@ import java.util.*;
  * Date: 14.10.14
  */
 public class HttpRequest implements HttpServletRequest {
+    private static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+        }
+    };
+
     private Request request;
+    private Map<String, Object> attributes;
 
     HttpRequest(Request request) {
         this.request = request;
@@ -33,7 +45,16 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public long getDateHeader(String s) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        String date = getHeader(s);
+        if (date == null)
+            return -1;
+
+        try {
+            Date d = dateFormatThreadLocal.get().parse(date);
+            return d.getTime();
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
     }
 
     @Override
@@ -43,7 +64,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public Enumeration<String> getHeaders(String s) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return Collections.enumeration(request.headers(s));
     }
 
     @Override
@@ -53,7 +74,10 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public int getIntHeader(String s) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        String value = request.header(s);
+        if (value == null)
+            return -1;
+        return Integer.parseInt(value);
     }
 
     @Override
@@ -183,12 +207,15 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public Object getAttribute(String s) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return attributes == null ? null : attributes.get(s);
     }
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (attributes == null)
+            return Collections.emptyEnumeration();
+
+        return Collections.enumeration(attributes.keySet());
     }
 
     @Override
@@ -203,12 +230,12 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public int getContentLength() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return (int) request.contentLength();
     }
 
     @Override
     public long getContentLengthLong() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return request.contentLength();
     }
 
     @Override
@@ -223,24 +250,30 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getParameter(String s) {
-//        return request.param(s);
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return request.param(s);
     }
 
     @Override
     public Enumeration<String> getParameterNames() {
-//        return Collections.enumeration(request.params().keySet());
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return Collections.enumeration(request.params().keySet());
     }
 
     @Override
     public String[] getParameterValues(String s) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        List<String> params = request.params(s);
+        if (params == null)
+            return null;
+
+        return params.toArray(new String[params.size()]);
     }
 
     @Override
     public Map<String, String[]> getParameterMap() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        Map<String, String[]> params = new HashMap<String, String[]>();
+        for (Map.Entry<String, MultiValue> entry : request.params().entrySet()) {
+            params.put(entry.getKey(), entry.getValue().asArray());
+        }
+        return params;
     }
 
     @Override
@@ -265,27 +298,33 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public BufferedReader getReader() throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return new BufferedReader(new InputStreamReader(request.getInputStream()));
     }
 
     @Override
     public String getRemoteAddr() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return request.connection().getIp();
     }
 
     @Override
     public String getRemoteHost() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return getRemoteAddr();
     }
 
     @Override
     public void setAttribute(String s, Object o) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (attributes == null)
+            attributes = new HashMap<String, Object>();
+
+        attributes.put(s, o);
     }
 
     @Override
     public void removeAttribute(String s) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (attributes == null)
+            return;
+
+        attributes.remove(s);
     }
 
     @Override
@@ -315,7 +354,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public int getRemotePort() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return request.connection().getPort();
     }
 
     @Override
