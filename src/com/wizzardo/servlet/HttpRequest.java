@@ -1,14 +1,12 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.http.MultiValue;
+import com.wizzardo.http.request.MultiPartEntry;
 import com.wizzardo.http.request.Request;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -192,7 +190,15 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public Collection<Part> getParts() throws IOException, ServletException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (!request.isMultipart())
+            return Collections.emptyList();
+
+        List<Part> parts = new ArrayList<Part>();
+
+        for (MultiPartEntry entry : request.entries())
+            parts.add(new MultiPart(entry));
+
+        return parts;
     }
 
     @Override
@@ -405,5 +411,63 @@ public class HttpRequest implements HttpServletRequest {
     @Override
     public DispatcherType getDispatcherType() {
         throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    private static class MultiPart implements Part {
+        private MultiPartEntry entry;
+
+        private MultiPart(MultiPartEntry entry) {
+            this.entry = entry;
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            return entry.inputStream();
+        }
+
+        @Override
+        public String getContentType() {
+            return entry.header("Content-Disposition");
+        }
+
+        @Override
+        public String getName() {
+            return entry.name();
+        }
+
+        @Override
+        public String getSubmittedFileName() {
+            return entry.fileName();
+        }
+
+        @Override
+        public long getSize() {
+            return entry.length();
+        }
+
+        @Override
+        public void write(String fileName) throws IOException {
+            throw new UnsupportedOperationException("Not implemented yet.");
+        }
+
+        @Override
+        public void delete() throws IOException {
+            entry.delete();
+        }
+
+        @Override
+        public String getHeader(String name) {
+            return entry.header(name);
+        }
+
+        @Override
+        public Collection<String> getHeaders(String name) {
+            throw new UnsupportedOperationException("Not implemented yet.");
+        }
+
+        @Override
+        public Collection<String> getHeaderNames() {
+            return entry.headers().keySet();
+        }
     }
 }
