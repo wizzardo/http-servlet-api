@@ -3,7 +3,9 @@ package com.wizzardo.servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author: wizzardo
@@ -12,11 +14,19 @@ import java.util.Enumeration;
 public class Session implements HttpSession {
 
     private com.wizzardo.http.Session session;
+    private ConcurrentHashMap<String, Object> map;
+    private boolean newSession = false;
     private long creationTime = System.currentTimeMillis();
     private long lastAccessedTime;
 
     Session(com.wizzardo.http.Session session) {
         this.session = session;
+        map = (ConcurrentHashMap<String, Object>) session.get("data");
+        if (map == null) {
+            map = new ConcurrentHashMap<String, Object>();
+            newSession = true;
+            session.put("data", map);
+        }
     }
 
     @Override
@@ -41,12 +51,12 @@ public class Session implements HttpSession {
 
     @Override
     public void setMaxInactiveInterval(int interval) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        session.setTTL(interval * 1000l);
     }
 
     @Override
     public int getMaxInactiveInterval() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return (int) (session.getTTL() / 1000);
     }
 
     @Override
@@ -56,51 +66,51 @@ public class Session implements HttpSession {
 
     @Override
     public Object getAttribute(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return map.get(name);
     }
 
     @Override
     public Object getValue(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return getAttribute(name);
     }
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return Collections.enumeration(map.keySet());
     }
 
     @Override
     public String[] getValueNames() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return map.keySet().toArray(new String[map.size()]);
     }
 
     @Override
     public void setAttribute(String name, Object value) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        map.put(name, value);
     }
 
     @Override
     public void putValue(String name, Object value) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        setAttribute(name, value);
     }
 
     @Override
     public void removeAttribute(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        map.remove(name);
     }
 
     @Override
     public void removeValue(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        removeAttribute(name);
     }
 
     @Override
     public void invalidate() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        map.clear();
     }
 
     @Override
     public boolean isNew() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return newSession;
     }
 }
