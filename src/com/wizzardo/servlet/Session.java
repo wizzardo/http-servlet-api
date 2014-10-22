@@ -14,19 +14,30 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Session implements HttpSession {
 
     private com.wizzardo.http.Session session;
-    private ConcurrentHashMap<String, Object> map;
-    private boolean newSession = false;
+    private ConcurrentHashMap<String, Object> map = new ConcurrentHashMap<String, Object>();
+    private boolean isNew = true;
     private long creationTime = System.currentTimeMillis();
-    private long lastAccessedTime;
+    private long lastAccessedTime = creationTime;
 
-    Session(com.wizzardo.http.Session session) {
+    private Session(com.wizzardo.http.Session session) {
         this.session = session;
-        map = (ConcurrentHashMap<String, Object>) session.get("data");
-        if (map == null) {
-            map = new ConcurrentHashMap<String, Object>();
-            newSession = true;
-            session.put("data", map);
-        }
+        session.put("data", this);
+    }
+
+    static Session create(com.wizzardo.http.Session session) {
+        return new Session(session);
+    }
+
+    static Session get(com.wizzardo.http.Session session) {
+        return (Session) session.get("session");
+    }
+
+    void setIsNew(boolean isNew) {
+        this.isNew = isNew;
+    }
+
+    void updateAccessedTime() {
+        lastAccessedTime = System.currentTimeMillis();
     }
 
     @Override
@@ -111,6 +122,6 @@ public class Session implements HttpSession {
 
     @Override
     public boolean isNew() {
-        return newSession;
+        return isNew;
     }
 }
