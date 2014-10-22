@@ -26,6 +26,7 @@ public class HttpRequest implements HttpServletRequest {
 
     private Request request;
     private Map<String, Object> attributes;
+    private Session session;
 
     HttpRequest(Request request) {
         this.request = request;
@@ -140,12 +141,21 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public HttpSession getSession(boolean b) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (session == null) {
+            session = Session.get(request.session());
+            if (session != null) {
+                session.updateAccessedTime();
+                session.setIsNew(false);
+            } else if (b)
+                session = Session.create(request.session());
+        }
+
+        return session;
     }
 
     @Override
     public HttpSession getSession() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return getSession(true);
     }
 
     @Override
@@ -203,7 +213,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public Part getPart(String name) throws IOException, ServletException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return new MultiPart(request.entry(name));
     }
 
     @Override
