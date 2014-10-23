@@ -4,8 +4,11 @@ import com.wizzardo.tools.http.HttpClient;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.log.StdErrLog;
 import org.junit.After;
 import org.junit.Before;
+
+import java.util.Properties;
 
 /**
  * @author: wizzardo
@@ -18,6 +21,10 @@ public class ServerTest {
 
     @Before
     public void setUp() throws Exception {
+        Properties loggingProperties = new Properties();
+        loggingProperties.setProperty("org.eclipse.jetty.LEVEL", "WARN");
+        StdErrLog.setProperties(loggingProperties);
+
         jetty = new Server(jettyPort);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
