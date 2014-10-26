@@ -1,6 +1,8 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.http.HttpServer;
 import com.wizzardo.tools.http.HttpClient;
+import com.wizzardo.tools.http.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -17,7 +19,9 @@ import java.util.Properties;
 public class ServerTest {
     protected CustomServlet servlet;
     private Server jetty;
+    private HttpServer myServer;
     private int jettyPort = 8080;
+    private int myPort = 8081;
 
     @Before
     public void setUp() throws Exception {
@@ -34,6 +38,13 @@ public class ServerTest {
         servlet = new CustomServlet();
         context.addServlet(new ServletHolder(servlet), "/*");
         jetty.start();
+
+
+        myServer = new HttpServer(myPort);
+        myServer.setIoThreadsCount(1);
+        myServer.setHandler(new ServletHandler(servlet));
+
+        myServer.start();
     }
 
     @After
@@ -47,7 +58,14 @@ public class ServerTest {
                 .header("Connection", "Close");
     }
 
-    public int jettyPort() {
-        return jettyPort;
+    protected com.wizzardo.tools.http.Request myRequest(String path) {
+        return HttpClient.createRequest("http://localhost:" + myPort + path)
+                .header("Connection", "Close");
+    }
+
+    public void printHeaders(Response response) {
+        response.headers().forEach((s, strings) -> {
+            System.out.println(s + ": " + strings);
+        });
     }
 }

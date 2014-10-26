@@ -25,6 +25,8 @@ public class ServletHandler implements Handler {
         HttpResponse httpResponse = new HttpResponse(response);
         try {
             servlet.service(httpRequest, httpResponse);
+            if (httpResponse.hasWriter())
+                response.setBody(httpResponse.getData());
         } catch (ServletException e) {
             e.printStackTrace();
         }

@@ -17,5 +17,6 @@ public class RequestTest extends ServerTest {
         };
 
         Assert.assertEquals("ok", jettyRequest("/servlet").get().asString());
+        Assert.assertEquals("ok", myRequest("/servlet").get().asString());
     }
 }

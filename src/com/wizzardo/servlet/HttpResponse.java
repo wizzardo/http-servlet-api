@@ -5,6 +5,7 @@ import com.wizzardo.http.response.Response;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -16,9 +17,23 @@ import java.util.Locale;
  */
 public class HttpResponse implements HttpServletResponse {
     private Response response;
+    private ByteArrayOutputStream buffer;
+    private PrintWriter writer;
 
     HttpResponse(Response response) {
         this.response = response;
+    }
+
+    boolean hasWriter() {
+        return writer != null;
+    }
+
+    byte[] getData() {
+        if (writer == null)
+            return null;
+
+        writer.flush();
+        return buffer.toByteArray();
     }
 
     @Override
@@ -143,7 +158,10 @@ public class HttpResponse implements HttpServletResponse {
 
     @Override
     public PrintWriter getWriter() throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (writer == null)
+            writer = new PrintWriter(buffer = new ByteArrayOutputStream());
+
+        return writer;
     }
 
     @Override
