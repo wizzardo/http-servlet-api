@@ -38,7 +38,6 @@ public class RequestTest extends ServerTest {
             }
         };
         test(request -> request.get().asString());
-        System.out.println();
         test(request -> request.header("some_date", "Tue, 15 Nov 1994 12:45:26 GMT").get().asString());
         test(request -> request.header("some_date", "exception").get().asString());
     }
