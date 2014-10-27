@@ -34,12 +34,12 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getAuthType() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return null;
     }
 
     @Override
     public Cookie[] getCookies() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return null;
     }
 
     @Override
