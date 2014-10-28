@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Before;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Properties;
 
 /**
@@ -23,8 +24,8 @@ public class ServerTest {
     protected CustomServlet servlet;
     private Server jetty;
     private HttpServer myServer;
-    private int jettyPort = 8080;
-    private int myPort = 8081;
+    private int jettyPort = 9080;
+    private int myPort = 9081;
 
     @Before
     public void setUp() throws Exception {
@@ -84,6 +85,17 @@ public class ServerTest {
         response.headers().forEach((s, strings) -> {
             System.out.println(s + ": " + strings);
         });
+    }
+
+    protected String enumerationToString(Enumeration enumeration) {
+        StringBuilder sb = new StringBuilder("[");
+        while (enumeration.hasMoreElements()) {
+            if (sb.length() > 1)
+                sb.append(", ");
+            sb.append(enumeration.nextElement());
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     protected void test(TestStrategy strategy) throws IOException {

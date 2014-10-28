@@ -40,6 +40,27 @@ public class RequestTest extends ServerTest {
         test(request -> request.get().asString());
         test(request -> request.header("some_date", "Tue, 15 Nov 1994 12:45:26 GMT").get().asString());
         test(request -> request.header("some_date", "exception").get().asString());
+
+        servlet.get = (req, resp) -> resp.getWriter().write(String.valueOf(req.getHeader("custom_header")));
+        test(request -> request.get().asString());
+        test(request -> request.header("custom_header", "value").get().asString());
+
+        servlet.get = (req, resp) -> resp.getWriter().write(String.valueOf(enumerationToString(req.getHeaderNames()).length()));
+        test(request -> request.get().asString());
+
+        servlet.get = (req, resp) -> resp.getWriter().write(enumerationToString(req.getHeaders("User-Agent")));
+        test(request -> request.get().asString());
+
+        servlet.get = (req, resp) -> {
+            try {
+                resp.getWriter().write(String.valueOf(req.getIntHeader("int_value")));
+            } catch (NumberFormatException e) {
+                resp.getWriter().write("NumberFormatException: " + req.getHeader("int_value"));
+            }
+        };
+        test(request -> request.get().asString());
+        test(request -> request.header("int_value", "123").get().asString());
+        test(request -> request.header("int_value", "NaN").get().asString());
     }
 
 
