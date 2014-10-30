@@ -43,7 +43,7 @@ public class HttpResponse implements HttpServletResponse {
 
     @Override
     public boolean containsHeader(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return response.containsHeader(name);
     }
 
     @Override

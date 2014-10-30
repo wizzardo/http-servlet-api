@@ -1,5 +1,6 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.tools.http.ConnectionMethod;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -64,4 +65,27 @@ public class RequestTest extends ServerTest {
     }
 
 
+    @Test
+    public void httpMethods() throws IOException {
+        servlet.get = (req, resp) -> resp.getWriter().write(req.getMethod());
+        test(request -> request.get().asString());
+
+        servlet.post = (req, resp) -> resp.getWriter().write(req.getMethod());
+        test(request -> request.post().asString());
+
+        servlet.put = (req, resp) -> resp.getWriter().write(req.getMethod());
+        test(request -> request.method(ConnectionMethod.PUT).execute().asString());
+
+        servlet.delete = (req, resp) -> resp.getWriter().write(req.getMethod());
+        test(request -> request.method(ConnectionMethod.DELETE).execute().asString());
+
+        servlet.options = (req, resp) -> resp.getWriter().write(req.getMethod());
+        test(request -> request.method(ConnectionMethod.OPTIONS).execute().asString());
+
+        servlet.head = (req, resp) -> resp.getWriter().write(req.getMethod());
+        test(request -> request.method(ConnectionMethod.HEAD).execute().asString());
+
+        servlet.trace = (req, resp) -> resp.getWriter().write(req.getMethod());
+        test(request -> request.method(ConnectionMethod.TRACE).execute().asString());
+    }
 }
