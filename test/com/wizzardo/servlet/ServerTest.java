@@ -1,6 +1,7 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.http.HttpServer;
+import com.wizzardo.http.UrlHandler;
 import com.wizzardo.tools.http.HttpClient;
 import com.wizzardo.tools.http.Response;
 import org.eclipse.jetty.server.Server;
@@ -20,7 +21,8 @@ import java.util.Properties;
  * Date: 23.10.14
  */
 public class ServerTest {
-    protected final String DEFAULT_PATH = "/servlet/";
+    protected final String CONTEXT_PATH = "/context";
+    protected final String SERVLET_PATH = "/servlet/";
     protected CustomServlet servlet;
     private Server jetty;
     private HttpServer myServer;
@@ -36,17 +38,19 @@ public class ServerTest {
         jetty = new Server(jettyPort);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.setContextPath(DEFAULT_PATH);
+        context.setContextPath(CONTEXT_PATH);
         jetty.setHandler(context);
 
         servlet = new CustomServlet();
-        context.addServlet(new ServletHolder(servlet), "/*");
+        context.addServlet(new ServletHolder(servlet), SERVLET_PATH + "*");
         jetty.start();
 
 
-        myServer = new HttpServer(myPort);
+        myServer = new HttpServer("localhost", myPort);
         myServer.setIoThreadsCount(1);
-        myServer.setHandler(new ServletHandler(servlet));
+        ServletHandler servletHandler = new ServletHandler(new Context(myServer, CONTEXT_PATH))
+                .append(SERVLET_PATH + "*", servlet);
+        myServer.setHandler(new UrlHandler().append(CONTEXT_PATH + "/*", servletHandler));
 
         myServer.start();
     }
@@ -60,11 +64,11 @@ public class ServerTest {
     }
 
     protected com.wizzardo.tools.http.Request jettyRequest() {
-        return jettyRequest(DEFAULT_PATH);
+        return jettyRequest(CONTEXT_PATH + SERVLET_PATH);
     }
 
     protected com.wizzardo.tools.http.Request myRequest() {
-        return myRequest(DEFAULT_PATH);
+        return myRequest(CONTEXT_PATH + SERVLET_PATH);
     }
 
     protected com.wizzardo.tools.http.Request jettyRequest(String path) {
@@ -100,6 +104,11 @@ public class ServerTest {
 
     protected void test(TestStrategy strategy) throws IOException {
         Assert.assertEquals(strategy.exec(jettyRequest()), strategy.exec(myRequest()));
+    }
+
+    protected void test(TestStrategy strategy, String path) throws IOException {
+        path = CONTEXT_PATH + SERVLET_PATH + path;
+        Assert.assertEquals(strategy.exec(jettyRequest(path)), strategy.exec(myRequest(path)));
     }
 
     protected static interface TestStrategy<T> {

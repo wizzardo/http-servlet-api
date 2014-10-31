@@ -27,9 +27,11 @@ public class HttpRequest implements HttpServletRequest {
     private Request request;
     private Map<String, Object> attributes;
     private Session session;
+    private Context context;
 
-    HttpRequest(Request request) {
+    HttpRequest(Context context, Request request) {
         this.request = request;
+        this.context = context;
     }
 
     @Override
@@ -96,7 +98,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getContextPath() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return context.getContextPath();
     }
 
     @Override
@@ -131,7 +133,19 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public StringBuffer getRequestURL() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        StringBuffer sb = new StringBuffer();
+        if (isSecure())
+            sb.append("https://");
+        else
+            sb.append("http://");
+
+        sb.append(context.getHost());
+        int port = context.getPort();
+        if ((!isSecure() && port != 80) || (isSecure() && port != 443))
+            sb.append(":").append(port);
+
+        sb.append(request.path());
+        return sb;
     }
 
     @Override
@@ -355,7 +369,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public boolean isSecure() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return false;
     }
 
     @Override

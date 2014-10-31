@@ -62,6 +62,16 @@ public class RequestTest extends ServerTest {
         test(request -> request.get().asString());
         test(request -> request.header("int_value", "123").get().asString());
         test(request -> request.header("int_value", "NaN").get().asString());
+
+
+        servlet.get = (req, resp) -> resp.getWriter().write(req.getContextPath());
+        test(request -> request.get().asString());
+
+        servlet.get = (req, resp) -> resp.getWriter().write(req.getRequestURL().toString().replaceAll("[0-9]+", "port"));
+        test(request -> request.get().asString());
+        test(request -> request.get().asString(), "foo");
+        test(request -> request.param("foo", "bar").get().asString(), "foo");
+
     }
 
 
