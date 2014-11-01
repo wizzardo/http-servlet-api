@@ -103,7 +103,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getQueryString() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return request.getQueryString();
     }
 
     @Override
@@ -128,7 +128,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getRequestURI() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return request.path();
     }
 
     @Override

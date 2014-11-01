@@ -72,6 +72,16 @@ public class RequestTest extends ServerTest {
         test(request -> request.get().asString(), "foo");
         test(request -> request.param("foo", "bar").get().asString(), "foo");
 
+        servlet.get = (req, resp) -> resp.getWriter().write(String.valueOf(req.getQueryString()));
+        test(request -> request.get().asString());
+        test(request -> request.param("foo", "bar").get().asString());
+        test(request -> request.get().asString(), "?");
+
+        servlet.get = (req, resp) -> resp.getWriter().write(req.getRequestURI());
+        test(request -> request.get().asString());
+        test(request -> request.param("foo", "bar").get().asString());
+        test(request -> request.param("foo", "bar").get().asString(), "foo");
+
     }
 
 
