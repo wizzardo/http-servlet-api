@@ -26,8 +26,8 @@ public class ServerTest {
     protected CustomServlet servlet;
     private Server jetty;
     private HttpServer myServer;
-    private int jettyPort = 9080;
-    private int myPort = 9081;
+    protected int jettyPort = 9080;
+    protected int myPort = 9081;
 
     @Before
     public void setUp() throws Exception {

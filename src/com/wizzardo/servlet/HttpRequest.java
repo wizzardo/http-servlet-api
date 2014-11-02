@@ -308,22 +308,22 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getProtocol() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return request.protocol();
     }
 
     @Override
     public String getScheme() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return "http";
     }
 
     @Override
     public String getServerName() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return context.getHost();
     }
 
     @Override
     public int getServerPort() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return context.getPort();
     }
 
     @Override

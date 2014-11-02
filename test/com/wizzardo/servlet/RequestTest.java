@@ -82,6 +82,18 @@ public class RequestTest extends ServerTest {
         test(request -> request.param("foo", "bar").get().asString());
         test(request -> request.param("foo", "bar").get().asString(), "foo");
 
+        servlet.get = (req, resp) -> resp.getWriter().write(req.getScheme());
+        test(request -> request.get().asString());
+
+        servlet.get = (req, resp) -> resp.getWriter().write(req.getProtocol());
+        test(request -> request.get().asString());
+
+        servlet.get = (req, resp) -> resp.getWriter().write(req.getServerName());
+        test(request -> request.get().asString());
+
+        servlet.get = (req, resp) -> resp.getWriter().write(String.valueOf(req.getServerPort() == jettyPort || req.getServerPort() == myPort));
+        test(request -> request.get().asString());
+
     }
 
 
