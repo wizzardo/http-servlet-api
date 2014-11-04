@@ -28,6 +28,7 @@ public class HttpRequest implements HttpServletRequest {
     private Map<String, Object> attributes;
     private Session session;
     private Context context;
+    private Cookie[] cookies;
 
     HttpRequest(Context context, Request request) {
         this.request = request;
@@ -41,7 +42,14 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public Cookie[] getCookies() {
-        return null;
+        if (cookies == null) {
+            cookies = new Cookie[request.cookies().size()];
+            int i = 0;
+            for (Map.Entry<String, String> entry : request.cookies().entrySet()) {
+                cookies[i++] = new Cookie(entry.getKey(), entry.getValue());
+            }
+        }
+        return cookies;
     }
 
     @Override
