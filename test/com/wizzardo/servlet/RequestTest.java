@@ -3,6 +3,7 @@ package com.wizzardo.servlet;
 import com.wizzardo.tools.http.ConnectionMethod;
 import org.junit.Test;
 
+import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -94,6 +95,26 @@ public class RequestTest extends ServerTest {
         servlet.get = (req, resp) -> resp.getWriter().write(String.valueOf(req.getServerPort() == jettyPort || req.getServerPort() == myPort));
         test(request -> request.get().asString());
 
+        servlet.get = (req, resp) -> {
+            String cookies;
+            if (req.getCookies() == null)
+                cookies = "null";
+            else {
+                StringBuilder sb = new StringBuilder();
+                for (Cookie cookie : req.getCookies()) {
+                    if (sb.length() > 0)
+                        sb.append("; ");
+                    sb.append(cookie.getName()).append(": ").append(cookie.getValue());
+                }
+                cookies = sb.toString();
+            }
+            resp.getWriter().write(cookies);
+        };
+        test(request -> request.get().asString());
+        test(request -> request.header("Cookie", "").get().asString());
+        test(request -> request.header("Cookie", "key=value").get().asString());
+        test(request -> request.header("Cookie", "key=value;foo=bar").get().asString());
+        test(request -> request.header("Cookie", "key=value; foo=bar; ikiki = ololo  ").get().asString());
     }
 
 

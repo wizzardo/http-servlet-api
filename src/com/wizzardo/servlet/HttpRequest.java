@@ -49,6 +49,9 @@ public class HttpRequest implements HttpServletRequest {
                 cookies[i++] = new Cookie(entry.getKey(), entry.getValue());
             }
         }
+        if (cookies.length == 0)
+            return null;
+
         return cookies;
     }
 
