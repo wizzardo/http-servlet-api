@@ -1,5 +1,6 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.http.HttpConnection;
 import com.wizzardo.http.MultiValue;
 import com.wizzardo.http.request.MultiPartEntry;
 import com.wizzardo.http.request.Request;
@@ -16,7 +17,7 @@ import java.util.*;
  * @author: wizzardo
  * Date: 14.10.14
  */
-public class HttpRequest implements HttpServletRequest {
+public class HttpRequest extends Request implements HttpServletRequest {
     private static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
@@ -24,14 +25,16 @@ public class HttpRequest implements HttpServletRequest {
         }
     };
 
-    private Request request;
     private Map<String, Object> attributes;
     private Session session;
     private Context context;
     private Cookie[] cookies;
 
-    HttpRequest(Context context, Request request) {
-        this.request = request;
+    public HttpRequest(HttpConnection connection) {
+        super(connection);
+    }
+
+    void setContext(Context context) {
         this.context = context;
     }
 
@@ -43,9 +46,9 @@ public class HttpRequest implements HttpServletRequest {
     @Override
     public Cookie[] getCookies() {
         if (cookies == null) {
-            cookies = new Cookie[request.cookies().size()];
+            cookies = new Cookie[cookies().size()];
             int i = 0;
-            for (Map.Entry<String, String> entry : request.cookies().entrySet()) {
+            for (Map.Entry<String, String> entry : cookies().entrySet()) {
                 cookies[i++] = new Cookie(entry.getKey(), entry.getValue());
             }
         }
@@ -71,22 +74,22 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getHeader(String s) {
-        return request.header(s);
+        return header(s);
     }
 
     @Override
     public Enumeration<String> getHeaders(String s) {
-        return Collections.enumeration(request.headers(s));
+        return Collections.enumeration(headers(s));
     }
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        return Collections.enumeration(request.headers().keySet());
+        return Collections.enumeration(headers().keySet());
     }
 
     @Override
     public int getIntHeader(String s) {
-        String value = request.header(s);
+        String value = header(s);
         if (value == null)
             return -1;
         return Integer.parseInt(value);
@@ -94,7 +97,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getMethod() {
-        return request.method().name();
+        return method().name();
     }
 
     @Override
@@ -110,11 +113,6 @@ public class HttpRequest implements HttpServletRequest {
     @Override
     public String getContextPath() {
         return context.getContextPath();
-    }
-
-    @Override
-    public String getQueryString() {
-        return request.getQueryString();
     }
 
     @Override
@@ -139,7 +137,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getRequestURI() {
-        return request.path();
+        return path();
     }
 
     @Override
@@ -155,7 +153,7 @@ public class HttpRequest implements HttpServletRequest {
         if ((!isSecure() && port != 80) || (isSecure() && port != 443))
             sb.append(":").append(port);
 
-        sb.append(request.path());
+        sb.append(path());
         return sb;
     }
 
@@ -167,12 +165,12 @@ public class HttpRequest implements HttpServletRequest {
     @Override
     public HttpSession getSession(boolean b) {
         if (session == null) {
-            session = Session.get(request.session());
+            session = Session.get(session());
             if (session != null) {
                 session.updateAccessedTime();
                 session.setIsNew(false);
             } else if (b)
-                session = Session.create(request.session());
+                session = Session.create(session());
         }
 
         return session;
@@ -225,12 +223,12 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public Collection<Part> getParts() throws IOException, ServletException {
-        if (!request.isMultipart())
+        if (!isMultipart())
             return Collections.emptyList();
 
         List<Part> parts = new ArrayList<Part>();
 
-        for (MultiPartEntry entry : request.entries())
+        for (MultiPartEntry entry : entries())
             parts.add(new MultiPart(entry));
 
         return parts;
@@ -238,7 +236,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public Part getPart(String name) throws IOException, ServletException {
-        return new MultiPart(request.entry(name));
+        return new MultiPart(entry(name));
     }
 
     @Override
@@ -271,12 +269,12 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public int getContentLength() {
-        return (int) request.contentLength();
+        return (int) contentLength();
     }
 
     @Override
     public long getContentLengthLong() {
-        return request.contentLength();
+        return contentLength();
     }
 
     @Override
@@ -285,23 +283,23 @@ public class HttpRequest implements HttpServletRequest {
     }
 
     @Override
-    public ServletInputStream getInputStream() throws IOException {
+    public ServletInputStream getInputStream() {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     @Override
     public String getParameter(String s) {
-        return request.param(s);
+        return param(s);
     }
 
     @Override
     public Enumeration<String> getParameterNames() {
-        return Collections.enumeration(request.params().keySet());
+        return Collections.enumeration(params().keySet());
     }
 
     @Override
     public String[] getParameterValues(String s) {
-        List<String> params = request.params(s);
+        List<String> params = params(s);
         if (params == null)
             return null;
 
@@ -311,7 +309,7 @@ public class HttpRequest implements HttpServletRequest {
     @Override
     public Map<String, String[]> getParameterMap() {
         Map<String, String[]> params = new HashMap<String, String[]>();
-        for (Map.Entry<String, MultiValue> entry : request.params().entrySet()) {
+        for (Map.Entry<String, MultiValue> entry : params().entrySet()) {
             params.put(entry.getKey(), entry.getValue().asArray());
         }
         return params;
@@ -319,7 +317,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getProtocol() {
-        return request.protocol();
+        return protocol();
     }
 
     @Override
@@ -339,12 +337,12 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public BufferedReader getReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(request.getInputStream()));
+        return new BufferedReader(new InputStreamReader(getInputStream()));
     }
 
     @Override
     public String getRemoteAddr() {
-        return request.connection().getIp();
+        return connection().getIp();
     }
 
     @Override
@@ -395,7 +393,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public int getRemotePort() {
-        return request.connection().getPort();
+        return connection().getPort();
     }
 
     @Override

@@ -1,7 +1,5 @@
 package com.wizzardo.servlet;
 
-import com.wizzardo.http.HttpServer;
-import com.wizzardo.http.UrlHandler;
 import com.wizzardo.tools.http.HttpClient;
 import com.wizzardo.tools.http.Response;
 import org.eclipse.jetty.server.Server;
@@ -25,7 +23,7 @@ public class ServerTest {
     protected final String SERVLET_PATH = "/servlet/";
     protected CustomServlet servlet;
     private Server jetty;
-    private HttpServer myServer;
+    private ServletServer myServer;
     protected int jettyPort = 9080;
     protected int myPort = 9081;
 
@@ -46,12 +44,9 @@ public class ServerTest {
         jetty.start();
 
 
-        myServer = new HttpServer("localhost", myPort);
+        myServer = new ServletServer(new Context("localhost", myPort, CONTEXT_PATH));
         myServer.setIoThreadsCount(1);
-        ServletHandler servletHandler = new ServletHandler(new Context(myServer, CONTEXT_PATH))
-                .append(SERVLET_PATH + "*", servlet);
-        myServer.setHandler(new UrlHandler().append(CONTEXT_PATH + "/*", servletHandler));
-
+        myServer.append(SERVLET_PATH + "*", servlet);
         myServer.start();
     }
 

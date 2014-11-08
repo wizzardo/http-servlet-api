@@ -1,18 +1,22 @@
 package com.wizzardo.servlet;
 
-import com.wizzardo.http.HttpServer;
-
 /**
  * @author: wizzardo
  * Date: 31.10.14
  */
 public class Context {
-    private HttpServer server;
-    private String contextPath;
+    protected String host;
+    protected int port;
+    protected String contextPath;
 
-    public Context(HttpServer server, String contextPath) {
-        this.server = server;
+    public Context(String host, int port, String contextPath) {
+        this.host = host;
+        this.port = port;
         this.contextPath = contextPath;
+    }
+
+    public ServletServer createServer() {
+        return new ServletServer(this);
     }
 
     public String getContextPath() {
@@ -20,10 +24,10 @@ public class Context {
     }
 
     public String getHost() {
-        return server.getHost();
+        return host;
     }
 
     public int getPort() {
-        return server.getPort();
+        return port;
     }
 }

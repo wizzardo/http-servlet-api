@@ -15,14 +15,9 @@ import java.util.Locale;
  * @author: wizzardo
  * Date: 26.10.14
  */
-public class HttpResponse implements HttpServletResponse {
-    private Response response;
+public class HttpResponse extends Response implements HttpServletResponse {
     private ByteArrayOutputStream buffer;
     private PrintWriter writer;
-
-    HttpResponse(Response response) {
-        this.response = response;
-    }
 
     boolean hasWriter() {
         return writer != null;
@@ -39,11 +34,6 @@ public class HttpResponse implements HttpServletResponse {
     @Override
     public void addCookie(Cookie cookie) {
         throw new UnsupportedOperationException("Not implemented yet.");
-    }
-
-    @Override
-    public boolean containsHeader(String name) {
-        return response.containsHeader(name);
     }
 
     @Override
