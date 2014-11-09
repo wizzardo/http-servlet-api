@@ -18,6 +18,8 @@ import java.util.Locale;
 public class HttpResponse extends Response implements HttpServletResponse {
     private ByteArrayOutputStream buffer;
     private PrintWriter writer;
+    private int status = 200;
+    private String statusMessage;
 
     boolean hasWriter() {
         return writer != null;
@@ -82,53 +84,57 @@ public class HttpResponse extends Response implements HttpServletResponse {
     }
 
     @Override
-    public void setHeader(String name, String value) {
-        throw new UnsupportedOperationException("Not implemented yet.");
-    }
-
-    @Override
     public void addHeader(String name, String value) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        appendHeader(name, value);
     }
 
     @Override
     public void setIntHeader(String name, int value) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        header(name, String.valueOf(value));
     }
 
     @Override
     public void addIntHeader(String name, int value) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        appendHeader(name, String.valueOf(value));
     }
 
     @Override
     public void setStatus(int sc) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        status = sc;
     }
 
     @Override
     public void setStatus(int sc, String sm) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        status = sc;
+        statusMessage = sm;
+    }
+
+    @Override
+    protected byte[] statusToBytes() {
+        if (statusMessage == null)
+            return ("HTTP/1.1 " + status + "\r\n").getBytes();
+        else
+            return ("HTTP/1.1 " + status + " " + statusMessage + "\r\n").getBytes();
     }
 
     @Override
     public int getStatus() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return status;
     }
 
     @Override
     public String getHeader(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return header(name);
     }
 
     @Override
     public Collection<String> getHeaders(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return headers(name);
     }
 
     @Override
     public Collection<String> getHeaderNames() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return headerNames();
     }
 
     @Override
