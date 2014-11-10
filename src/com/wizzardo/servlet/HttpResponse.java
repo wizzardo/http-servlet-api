@@ -1,5 +1,6 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.http.request.Header;
 import com.wizzardo.http.response.Response;
 
 import javax.servlet.ServletOutputStream;
@@ -9,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -75,12 +77,12 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void setDateHeader(String name, long date) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        header(name, dateFormatThreadLocal.get().format(new Date(date)));
     }
 
     @Override
     public void addDateHeader(String name, long date) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        appendHeader(name, dateFormatThreadLocal.get().format(new Date(date)));
     }
 
     @Override
@@ -167,17 +169,17 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void setContentLength(int len) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        header(Header.KEY_CONTENT_LENGTH, len);
     }
 
     @Override
     public void setContentLengthLong(long len) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        header(Header.KEY_CONTENT_LENGTH, len);
     }
 
     @Override
     public void setContentType(String type) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        header(Header.KEY_CONTENT_TYPE, type);
     }
 
     @Override
@@ -187,7 +189,7 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public int getBufferSize() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return 0;
     }
 
     @Override
