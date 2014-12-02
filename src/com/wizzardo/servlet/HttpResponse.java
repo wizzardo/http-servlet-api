@@ -9,15 +9,27 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * @author: wizzardo
  * Date: 26.10.14
  */
 public class HttpResponse extends Response implements HttpServletResponse {
+
+    protected static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            SimpleDateFormat format = new SimpleDateFormat("EEE, dd-MMM-yyyy kk:mm:ss z", Locale.US);
+            format.setTimeZone(TimeZone.getTimeZone("GMT"));
+            return format;
+        }
+    };
+
     private ByteArrayOutputStream buffer;
     private PrintWriter writer;
     private int status = 200;
