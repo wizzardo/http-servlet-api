@@ -1,6 +1,7 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.http.request.Header;
+import com.wizzardo.http.response.CookieBuilder;
 import com.wizzardo.http.response.Response;
 
 import javax.servlet.ServletOutputStream;
@@ -24,7 +25,7 @@ public class HttpResponse extends Response implements HttpServletResponse {
     protected static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
-            SimpleDateFormat format = new SimpleDateFormat("EEE, dd-MMM-yyyy kk:mm:ss z", Locale.US);
+            SimpleDateFormat format = new SimpleDateFormat("EEE, dd-MMM-yyyy HH:mm:ss z", Locale.US);
             format.setTimeZone(TimeZone.getTimeZone("GMT"));
             return format;
         }
@@ -49,7 +50,35 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void addCookie(Cookie cookie) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        CookieBuilder cb = new CookieBuilder(cookie.getName(), cookie.getValue());
+        if (cookie.getMaxAge() > 0)
+            cb.expires(System.currentTimeMillis() + 1000 * cookie.getMaxAge());
+        else if (cookie.getMaxAge() == 0)
+            cb.expires(0);
+
+        if (cookie.getPath() != null)
+            cb.path(cookie.getPath());
+        if (cookie.getDomain() != null)
+            cb.domain(cookie.getDomain());
+        if (cookie.isHttpOnly())
+            cb.httpOnly();
+        if (cookie.getSecure())
+            cb.secure();
+
+        String c = cb.build();
+        if (cookie.getComment() != null)
+            cookie.setVersion(1);
+
+        if (cookie.getVersion() != 0) {
+            StringBuilder sb = new StringBuilder(c);
+            sb.append(";Version=").append(cookie.getVersion());
+
+            if (cookie.getComment() != null)
+                sb.append(";Comment=").append(cookie.getComment());
+
+            c = sb.toString();
+        }
+        setCookie(c);
     }
 
     @Override
