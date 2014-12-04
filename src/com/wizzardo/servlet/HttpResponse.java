@@ -35,6 +35,8 @@ public class HttpResponse extends Response implements HttpServletResponse {
     private PrintWriter writer;
     private int status = 200;
     private String statusMessage;
+    private Context context;
+    private HttpRequest request;
 
     boolean hasWriter() {
         return writer != null;
@@ -46,6 +48,14 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
         writer.flush();
         return buffer.toByteArray();
+    }
+
+    void setContext(Context context) {
+        this.context = context;
+    }
+
+    void setRequest(HttpRequest request) {
+        this.request = request;
     }
 
     @Override
@@ -113,7 +123,16 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void sendRedirect(String location) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (location.startsWith("/"))
+            location = context.createAbsoluteUrl(location);
+        else if (!location.startsWith("http://") && !location.startsWith("https://")) {
+            int i = request.path().lastIndexOf("/");
+            if (i >= 0)
+                location = request.path().substring(0, i + 1) + location;
+            location = context.createAbsoluteUrl(location);
+        }
+
+        setRedirectTemporarily(location);
     }
 
     @Override

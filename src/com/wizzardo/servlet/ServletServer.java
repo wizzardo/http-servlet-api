@@ -29,6 +29,8 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
             HttpRequest httpRequest = connection.getRequest();
             HttpResponse httpResponse = connection.getResponse();
             httpRequest.setContext(context);
+            httpResponse.setContext(context);
+            httpResponse.setRequest(httpRequest);
 
             String path = httpRequest.path();
             path = path.substring(context.getContextPath().length());

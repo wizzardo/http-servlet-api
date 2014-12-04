@@ -142,19 +142,7 @@ public class HttpRequest extends Request implements HttpServletRequest {
 
     @Override
     public StringBuffer getRequestURL() {
-        StringBuffer sb = new StringBuffer();
-        if (isSecure())
-            sb.append("https://");
-        else
-            sb.append("http://");
-
-        sb.append(context.getHost());
-        int port = context.getPort();
-        if ((!isSecure() && port != 80) || (isSecure() && port != 443))
-            sb.append(":").append(port);
-
-        sb.append(path());
-        return sb;
+        return new StringBuffer(context.createAbsoluteUrl(path()));
     }
 
     @Override
@@ -378,7 +366,7 @@ public class HttpRequest extends Request implements HttpServletRequest {
 
     @Override
     public boolean isSecure() {
-        return false;
+        return context.isSecure();
     }
 
     @Override

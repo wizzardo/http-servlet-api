@@ -30,4 +30,23 @@ public class Context {
     public int getPort() {
         return port;
     }
+
+    public boolean isSecure() {
+        return false;
+    }
+
+    public String createAbsoluteUrl(String path) {
+        StringBuilder sb = new StringBuilder();
+        if (isSecure())
+            sb.append("https://");
+        else
+            sb.append("http://");
+
+        sb.append(host);
+        if ((!isSecure() && port != 80) || (isSecure() && port != 443))
+            sb.append(":").append(port);
+
+        sb.append(path);
+        return sb.toString();
+    }
 }
