@@ -109,4 +109,19 @@ public class ResponseTest extends ServerTest {
         test(request -> request.get().asString());
         test(request -> request.get().header("Set-Cookie"));
     }
+
+    @Test
+    public void redirect() throws IOException {
+        servlet.get = (req, resp) -> resp.sendRedirect("/redirect_here");
+        test(request -> request.disableRedirects().get().header("Location").replaceAll("[0-9]+", "port"), "path");
+
+        servlet.get = (req, resp) -> resp.sendRedirect("redirect_here");
+        test(request -> request.disableRedirects().get().header("Location").replaceAll("[0-9]+", "port"), "path");
+
+        servlet.get = (req, resp) -> resp.sendRedirect("");
+        test(request -> request.disableRedirects().get().header("Location").replaceAll("[0-9]+", "port"), "path");
+
+        servlet.get = (req, resp) -> resp.sendRedirect("http://example.com");
+        test(request -> request.disableRedirects().get().header("Location").replaceAll("[0-9]+", "port"), "path");
+    }
 }
