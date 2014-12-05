@@ -37,6 +37,7 @@ public class HttpResponse extends Response implements HttpServletResponse {
     private String statusMessage;
     private Context context;
     private HttpRequest request;
+    private boolean committed = false;
 
     boolean hasWriter() {
         return writer != null;
@@ -113,12 +114,18 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void sendError(int sc, String msg) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (isCommitted())
+            throw new IllegalStateException("the response has already been committed");
+
+        committed = true;
+        setHeader(Header.KEY_CONTENT_TYPE, Header.VALUE_CONTENT_TYPE_HTML_UTF8);
+        setBody(msg); //todo: render custom error page
+        status = sc;
     }
 
     @Override
     public void sendError(int sc) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        sendError(sc, "Error: " + sc);
     }
 
     @Override
@@ -267,7 +274,7 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public boolean isCommitted() {
-        return isProcessed();
+        return committed || isProcessed();
     }
 
     @Override
