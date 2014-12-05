@@ -216,8 +216,11 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public PrintWriter getWriter() throws IOException {
+        if (buffer == null)
+            buffer = new ByteArrayOutputStream();
+
         if (writer == null)
-            writer = new PrintWriter(buffer = new ByteArrayOutputStream());
+            writer = new PrintWriter(buffer);
 
         return writer;
     }
@@ -264,12 +267,18 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public boolean isCommitted() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return isProcessed();
     }
 
     @Override
     public void reset() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (isCommitted())
+            throw new IllegalStateException("the response has already been committed");
+        if (buffer == null)
+            return;
+
+        buffer.reset();
+        writer = null;
     }
 
     @Override
