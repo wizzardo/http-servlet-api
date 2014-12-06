@@ -1,6 +1,7 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.http.HttpConnection;
+import com.wizzardo.servlet.streams.ServletEpollInputStream;
 
 /**
  * @author: wizzardo
@@ -20,5 +21,10 @@ class ServletHttpConnection extends HttpConnection<HttpRequest, HttpResponse> {
     @Override
     protected HttpResponse createResponse() {
         return new HttpResponse();
+    }
+
+    @Override
+    protected ServletEpollInputStream createInputStream(byte[] buffer, int currentOffset, int currentLimit, long contentLength) {
+        return new ServletEpollInputStream(this, buffer, currentOffset, currentLimit, contentLength);
     }
 }
