@@ -22,8 +22,8 @@ public class ServerTest {
     protected final String CONTEXT_PATH = "/context";
     protected final String SERVLET_PATH = "/servlet/";
     protected CustomServlet servlet;
-    private Server jetty;
-    private ServletServer myServer;
+    protected Server jetty;
+    protected ServletServer myServer;
     protected int jettyPort = 9080;
     protected int myPort = 9081;
 
@@ -33,27 +33,38 @@ public class ServerTest {
         loggingProperties.setProperty("org.eclipse.jetty.LEVEL", "WARN");
         StdErrLog.setProperties(loggingProperties);
 
-        jetty = new Server(jettyPort);
+        createServers();
+        init();
+        startServers();
+    }
 
+    protected void init() {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath(CONTEXT_PATH);
         jetty.setHandler(context);
 
         servlet = new CustomServlet();
         context.addServlet(new ServletHolder(servlet), SERVLET_PATH + "*");
-        jetty.start();
 
+
+        myServer.append(SERVLET_PATH + "*", servlet);
+    }
+
+    protected void startServers() throws Exception {
+        jetty.start();
+        myServer.start();
+    }
+
+    protected void createServers() throws Exception {
+        jetty = new Server(jettyPort);
 
         myServer = new ServletServer(new Context("localhost", myPort, CONTEXT_PATH));
         myServer.setIoThreadsCount(1);
-        myServer.append(SERVLET_PATH + "*", servlet);
-        myServer.start();
     }
 
     @After
     public void tearDown() throws Exception {
         jetty.stop();
-        servlet.clean();
 
         myServer.stopEpoll();
     }
