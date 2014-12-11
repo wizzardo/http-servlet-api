@@ -3,6 +3,7 @@ package com.wizzardo.servlet;
 import com.wizzardo.http.request.Header;
 import com.wizzardo.http.response.CookieBuilder;
 import com.wizzardo.http.response.Response;
+import com.wizzardo.http.response.Status;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
@@ -176,6 +177,12 @@ public class HttpResponse extends Response implements HttpServletResponse {
     public void setStatus(int sc, String sm) {
         status = sc;
         statusMessage = sm;
+    }
+
+    @Override
+    public Response setStatus(Status status) {
+        setStatus(status.code, status.message);
+        return this;
     }
 
     @Override
