@@ -47,7 +47,7 @@ public class ServerTest {
         context.addServlet(new ServletHolder(servlet), SERVLET_PATH + "*");
 
 
-        myServer.append(SERVLET_PATH + "*", servlet);
+        myServer.append(CONTEXT_PATH, SERVLET_PATH + "*", servlet);
     }
 
     protected void startServers() throws Exception {
@@ -58,7 +58,7 @@ public class ServerTest {
     protected void createServers() throws Exception {
         jetty = new Server(jettyPort);
 
-        myServer = new ServletServer(new Context("localhost", myPort, CONTEXT_PATH));
+        myServer = new ServletServer("localhost", myPort);
         myServer.setIoThreadsCount(1);
     }
 
