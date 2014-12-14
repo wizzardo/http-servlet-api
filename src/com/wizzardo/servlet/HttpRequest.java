@@ -1,6 +1,5 @@
 package com.wizzardo.servlet;
 
-import com.wizzardo.http.HttpConnection;
 import com.wizzardo.http.MultiValue;
 import com.wizzardo.http.request.MultiPartEntry;
 import com.wizzardo.http.request.Request;
@@ -17,7 +16,7 @@ import java.util.*;
  * @author: wizzardo
  * Date: 14.10.14
  */
-public class HttpRequest extends Request implements HttpServletRequest {
+public class HttpRequest extends Request<ServletHttpConnection> implements HttpServletRequest {
     private static ThreadLocal<SimpleDateFormat> dateFormatThreadLocal = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
@@ -30,7 +29,7 @@ public class HttpRequest extends Request implements HttpServletRequest {
     private Context context;
     private Cookie[] cookies;
 
-    public HttpRequest(HttpConnection connection) {
+    public HttpRequest(ServletHttpConnection connection) {
         super(connection);
     }
 
