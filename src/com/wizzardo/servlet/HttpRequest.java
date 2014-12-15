@@ -28,6 +28,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
     private Session session;
     private Context context;
     private Cookie[] cookies;
+    private boolean isAsyncStarted = false;
 
     public HttpRequest(ServletHttpConnection connection) {
         super(connection);
@@ -415,7 +416,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public boolean isAsyncStarted() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return isAsyncStarted;
     }
 
     @Override
