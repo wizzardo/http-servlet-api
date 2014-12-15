@@ -15,8 +15,9 @@ public class AsyncServletInputStream extends ServletInputStream {
     protected ServletEpollInputStream stream;
     protected volatile ReadListenerWrapper listener;
 
-    public AsyncServletInputStream(HttpRequest request) {
+    public AsyncServletInputStream(HttpRequest request, ServletEpollInputStream stream) {
         this.request = request;
+        this.stream = stream;
     }
 
     @Override
@@ -52,6 +53,11 @@ public class AsyncServletInputStream extends ServletInputStream {
     @Override
     public int read() throws IOException {
         return stream.read();
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        return stream.read(b, off, len);
     }
 
 }

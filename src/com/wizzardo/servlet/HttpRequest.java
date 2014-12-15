@@ -271,7 +271,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public ServletInputStream getInputStream() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return connection().getInputStream().getServletInputStream();
     }
 
     @Override
