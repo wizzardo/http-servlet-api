@@ -1,6 +1,8 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.tools.http.ConnectionMethod;
+import com.wizzardo.tools.http.ContentType;
+import com.wizzardo.tools.security.MD5;
 import org.junit.Test;
 
 import javax.servlet.http.Cookie;
@@ -140,5 +142,11 @@ public class RequestTest extends ServerTest {
 
         servlet.trace = (req, resp) -> resp.getWriter().write(req.getMethod());
         test(request -> request.method(ConnectionMethod.TRACE).execute().asString());
+    }
+
+    @Test
+    public void inputStream() throws IOException {
+        servlet.post = (req, resp) -> resp.getWriter().write(MD5.getMD5AsString(req.getInputStream()));
+        test(request -> request.data("some data".getBytes(), ContentType.BINARY).post().asString());
     }
 }
