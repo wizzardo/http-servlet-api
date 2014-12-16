@@ -8,6 +8,7 @@ import org.junit.Test;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * @author: wizzardo
@@ -148,5 +149,10 @@ public class RequestTest extends ServerTest {
     public void inputStream() throws IOException {
         servlet.post = (req, resp) -> resp.getWriter().write(MD5.getMD5AsString(req.getInputStream()));
         test(request -> request.data("some data".getBytes(), ContentType.BINARY).post().asString());
+
+        byte[] data = new byte[10 * 1024 * 1024];
+        new Random().nextBytes(data);
+        servlet.post = (request, response) -> response.getWriter().write(MD5.getMD5AsString(request.getInputStream()));
+        test(request -> request.data(data, ContentType.BINARY).post().asString());
     }
 }
