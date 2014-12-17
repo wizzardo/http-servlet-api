@@ -1,9 +1,12 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.tools.security.MD5;
 import org.junit.Test;
 
 import javax.servlet.http.Cookie;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Random;
 
 /**
  * @author: wizzardo
@@ -124,4 +127,29 @@ public class ResponseTest extends ServerTest {
         servlet.get = (req, resp) -> resp.sendRedirect("http://example.com");
         test(request -> request.disableRedirects().get().header("Location").replaceAll("[0-9]+", "port"), "path");
     }
+
+    @Test
+    public void outputStream() throws IOException, InterruptedException {
+        servlet.get = (req, resp) -> {
+            byte[] bytes = "some data".getBytes();
+            resp.setContentLength(bytes.length);
+            OutputStream out = resp.getOutputStream();
+            out.write(bytes);
+        };
+        test(request -> request.get().asString());
+        test(request -> request.get().asString());
+        test(request -> request.get().asString());
+
+        byte[] data = new byte[10 * 1024 * 1024];
+        new Random().nextBytes(data);
+        servlet.get = (req, resp) -> {
+            resp.setContentLength(data.length);
+            OutputStream out = resp.getOutputStream();
+            out.write(data);
+        };
+        test(request -> MD5.getMD5AsString(request.get().asBytes()));
+        test(request -> MD5.getMD5AsString(request.get().asBytes()));
+        test(request -> MD5.getMD5AsString(request.get().asBytes()));
+    }
+
 }
