@@ -1,14 +1,14 @@
 package com.wizzardo.servlet;
 
-import com.wizzardo.http.EpollOutputStream;
 import com.wizzardo.http.HttpConnection;
 import com.wizzardo.servlet.streams.ServletEpollInputStream;
+import com.wizzardo.servlet.streams.ServletEpollOutputStream;
 
 /**
  * @author: wizzardo
  * Date: 05.11.14
  */
-public class ServletHttpConnection extends HttpConnection<HttpRequest, HttpResponse, ServletEpollInputStream, EpollOutputStream> {
+public class ServletHttpConnection extends HttpConnection<HttpRequest, HttpResponse, ServletEpollInputStream, ServletEpollOutputStream> {
 
     public ServletHttpConnection(int fd, int ip, int port) {
         super(fd, ip, port);
@@ -27,5 +27,10 @@ public class ServletHttpConnection extends HttpConnection<HttpRequest, HttpRespo
     @Override
     protected ServletEpollInputStream createInputStream(byte[] buffer, int currentOffset, int currentLimit, long contentLength) {
         return new ServletEpollInputStream(this, buffer, currentOffset, currentLimit, contentLength);
+    }
+
+    @Override
+    protected ServletEpollOutputStream createOutputStream() {
+        return new ServletEpollOutputStream(this);
     }
 }

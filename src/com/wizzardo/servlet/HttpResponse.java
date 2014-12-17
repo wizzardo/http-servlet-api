@@ -225,7 +225,7 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public ServletOutputStream getOutputStream() throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return getOutputStream(request.connection()).getServletOutputStream();
     }
 
     @Override
