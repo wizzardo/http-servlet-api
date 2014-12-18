@@ -26,6 +26,10 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         super(ip, port);
     }
 
+    public ServletServer(String ip, int port, int workers) {
+        super(ip, port, workers);
+    }
+
     @Override
     protected T createConnection(int fd, int ip, int port) {
         return (T) new ServletHttpConnection(fd, ip, port);

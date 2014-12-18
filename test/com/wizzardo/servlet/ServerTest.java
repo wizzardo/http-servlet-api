@@ -58,7 +58,7 @@ public class ServerTest {
     protected void createServers() throws Exception {
         jetty = new Server(jettyPort);
 
-        myServer = new ServletServer("localhost", myPort);
+        myServer = new ServletServer("localhost", myPort, 1);
         myServer.setIoThreadsCount(1);
     }
 

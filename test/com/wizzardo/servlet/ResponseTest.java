@@ -140,7 +140,7 @@ public class ResponseTest extends ServerTest {
         test(request -> request.get().asString());
         test(request -> request.get().asString());
 
-        byte[] data = new byte[10 * 1024 * 1024];
+        byte[] data = new byte[50 * 1024 * 1024];
         new Random().nextBytes(data);
         servlet.get = (req, resp) -> {
             resp.setContentLength(data.length);
@@ -150,6 +150,17 @@ public class ResponseTest extends ServerTest {
         test(request -> MD5.getMD5AsString(request.get().asBytes()));
         test(request -> MD5.getMD5AsString(request.get().asBytes()));
         test(request -> MD5.getMD5AsString(request.get().asBytes()));
+
+
+        servlet.get = (req, resp) -> {
+            byte[] bytes = "some data".getBytes();
+            resp.setHeader("Connection", "Close");
+            resp.setContentLength(bytes.length);
+            OutputStream out = resp.getOutputStream();
+            out.write(bytes);
+        };
+        test(request -> request.get().asString());
+        //last request must be with "Connection: close"
     }
 
 }
