@@ -1,8 +1,10 @@
 package com.wizzardo.servlet.streams;
 
 import com.wizzardo.http.EpollInputStream;
+import com.wizzardo.servlet.HttpRequest;
 import com.wizzardo.servlet.ServletHttpConnection;
 
+import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import java.io.IOException;
 
@@ -16,7 +18,7 @@ public class ServletEpollInputStream extends EpollInputStream {
 
     public ServletEpollInputStream(ServletHttpConnection connection, byte[] buffer, int currentOffset, int currentLimit, long contentLength) {
         super(connection, buffer, currentOffset, currentLimit, contentLength);
-        asyncServletInputStream = new AsyncServletInputStream(connection.getRequest(), this);
+        asyncServletInputStream = new AsyncServletInputStream(connection.getRequest());
     }
 
     @Override
@@ -40,5 +42,54 @@ public class ServletEpollInputStream extends EpollInputStream {
 
     public ServletInputStream getServletInputStream() {
         return asyncServletInputStream;
+    }
+
+    class AsyncServletInputStream extends ServletInputStream {
+        protected HttpRequest request;
+        protected volatile ReadListenerWrapper listener;
+
+        public AsyncServletInputStream(HttpRequest request) {
+            this.request = request;
+        }
+
+        @Override
+        public boolean isFinished() {
+            return ServletEpollInputStream.this.isFinished();
+        }
+
+        @Override
+        public boolean isReady() {
+            int available = ServletEpollInputStream.this.available();
+            if (available == 0) {
+                try {
+                    ServletEpollInputStream.this.fillBuffer();
+                } catch (Exception e) {
+                    if (listener != null)
+                        listener.onError(e);
+                    else
+                        e.printStackTrace();
+                }
+                available = ServletEpollInputStream.this.available();
+            }
+
+            return available != 0;
+        }
+
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            if (listener != null)
+                throw new IllegalStateException("Listener was already set");
+            listener = new ReadListenerWrapper(readListener);
+        }
+
+        @Override
+        public int read() throws IOException {
+            return ServletEpollInputStream.this.read();
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return ServletEpollInputStream.this.read(b, off, len);
+        }
     }
 }
