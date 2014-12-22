@@ -72,5 +72,10 @@ public class ServletEpollOutputStream extends EpollOutputStream {
         public void write(byte[] b, int off, int len) throws IOException {
             ServletEpollOutputStream.this.write(b, off, len);
         }
+
+        @Override
+        public void flush() throws IOException {
+            ServletEpollOutputStream.this.flush();
+        }
     }
 }
