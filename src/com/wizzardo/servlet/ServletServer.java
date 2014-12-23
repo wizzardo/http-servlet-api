@@ -7,6 +7,7 @@ import com.wizzardo.tools.misc.UncheckedThrow;
 import com.wizzardo.tools.xml.Node;
 
 import javax.servlet.Servlet;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +56,13 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         }
     }
 
+    @Override
+    public void stopEpoll() {
+        super.stopEpoll();
+        for (Context context : contexts.values())
+            context.onDestroy();
+    }
+
     protected void processRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException, ServletException {
         String path = httpRequest.path();
         Context context = getContext(path);
@@ -85,12 +93,17 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
 
     public synchronized ServletServer append(String contextPath, String path, Servlet servlet) {
         Context context = contexts.get(contextPath);
-        if (context == null) {
-            context = new Context(getHost(), getPort(), contextPath);
-            contexts.put(contextPath, context);
-        }
+        if (context == null)
+            context = createContext(contextPath);
         context.getServletsMapping().append(path, servlet);
         return this;
+    }
+
+    public synchronized Context createContext(String contextPath) {
+        Context context = new Context(getHost(), getPort(), contextPath);
+        if (contexts.putIfAbsent(contextPath, context) != null)
+            throw new IllegalStateException("Context with name '" + contextPath + "' was already initialized");
+        return context;
     }
 
     public void registerWar(String path) {
@@ -110,6 +123,14 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
 //        System.out.println(webXmlNode.findChildWithNameEquals("servlet",true).findChildWithNameEquals("servlet-class",true).getText());
 //        System.out.println("try to get servlets");
 //        System.out.println(webXmlNode);
+
+            Context context = createContext(appBase);
+            for (Node listenerNode : webXmlNode.findAll("listener")) {
+                Class clazz = cl.loadClass(listenerNode.get("listener-class").text());
+                context.addContextListener((ServletContextListener) clazz.newInstance());
+            }
+            context.onInit();
+
             for (Node servletNode : webXmlNode.findAll("servlet")) {
 //        for(Node params:servletNode.getInnerNodes()){
 //            System.out.println(params.getName());
@@ -128,7 +149,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 Node m = webXmlNode.get("servlet-mapping/servlet-name[text()=" + servletName + "]").parent();
                 for (Node urlPattern : m.getAll("url-pattern")) {
 //                System.out.println("map to "+appBase + urlPattern.text());
-                    append(appBase, urlPattern.text(), servlet);
+                    context.getServletsMapping().append(urlPattern.text(), servlet);
                 }
             }
         } catch (Exception e) {

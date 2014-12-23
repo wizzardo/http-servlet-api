@@ -5,10 +5,7 @@ import javax.servlet.descriptor.JspConfigDescriptor;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.EventListener;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author: wizzardo
@@ -19,6 +16,7 @@ public class Context implements ServletContext {
     protected int port;
     protected String contextPath;
     protected UrlMapping<Servlet> servletsMapping = new UrlMapping<>();
+    protected List<ServletContextListener> contextListeners = new ArrayList<>();
 
     public Context(String host, int port, String contextPath) {
         this.host = host;
@@ -59,6 +57,21 @@ public class Context implements ServletContext {
 
         sb.append(path);
         return sb.toString();
+    }
+
+    protected void onInit() {
+        ServletContextEvent event = new ServletContextEvent(this);
+        for (ServletContextListener listener : contextListeners)
+            listener.contextInitialized(event);
+    }
+
+    protected void onDestroy() {
+        for (Servlet servlet : servletsMapping)
+            servlet.destroy();
+
+        ServletContextEvent event = new ServletContextEvent(this);
+        for (int i = contextListeners.size() - 1; i >= 0; i--)
+            contextListeners.get(i).contextDestroyed(event);
     }
 
     @Override
@@ -284,6 +297,10 @@ public class Context implements ServletContext {
     @Override
     public <T extends EventListener> void addListener(T t) {
         throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    public void addContextListener(ServletContextListener listener) {
+        contextListeners.add(listener);
     }
 
     @Override
