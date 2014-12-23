@@ -2,6 +2,7 @@ package com.wizzardo.servlet;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -10,7 +11,7 @@ import java.util.regex.Pattern;
  * @author: wizzardo
  * Date: 31.10.14
  */
-public class UrlMapping<T> {
+public class UrlMapping<T> implements Iterable<T> {
 
     protected HashMap<String, T> mapping = new HashMap<>();
     protected LinkedHashMap<Pattern, T> regexpMapping = new LinkedHashMap<>();
@@ -36,5 +37,23 @@ public class UrlMapping<T> {
         }
 
         return this;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            Iterator<T> mapping = UrlMapping.this.mapping.values().iterator();
+            Iterator<T> regexpMapping = UrlMapping.this.regexpMapping.values().iterator();
+
+            @Override
+            public boolean hasNext() {
+                return mapping.hasNext() || regexpMapping.hasNext();
+            }
+
+            @Override
+            public T next() {
+                return mapping.hasNext() ? mapping.next() : regexpMapping.next();
+            }
+        };
     }
 }
