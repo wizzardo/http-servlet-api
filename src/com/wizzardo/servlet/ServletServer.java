@@ -107,8 +107,13 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
     }
 
     public void registerWar(String path) {
+        File war = new File(path);
+        String appBase = war.getName().equalsIgnoreCase("root.war") ? "/" : "/" + war.getName().substring(0, war.getName().length() - 4);
+        registerWar(war, appBase);
+    }
+
+    public void registerWar(File war, String appBase) {
         try {
-            File war = new File(path);
             File unpacked = new File("/tmp/" + war.getName());
             ZipTools.unzip(war, unpacked);
 
@@ -116,15 +121,28 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
             Node webXmlNode = Node.parse(webXML);
 //        System.out.println(webXmlNode);
 
-            String appBase = war.getName().equalsIgnoreCase("root.war") ? "/" : "/" + war.getName().substring(0, war.getName().length() - 4);
 
-            ClassLoader cl = URLClassLoader.newInstance(new URL[]{new File(unpacked, "WEB-INF/classes").toURI().toURL()});
+            File libsDir = new File(unpacked, "WEB-INF/lib");
+            File[] libs = libsDir.isDirectory() ? libsDir.listFiles() : null;
+            URL[] resources = new URL[1 + (libs != null ? libs.length : 0)];
+            if (libsDir.exists()) {
+                for (int i = 0; i < libs.length; i++) {
+                    resources[i] = libs[i].toURI().toURL();
+                }
+            }
+            resources[resources.length - 1] = new File(unpacked, "WEB-INF/classes").toURI().toURL();
+
+
+            ClassLoader cl = URLClassLoader.newInstance(resources);
 //        cl.loadClass(webXmlNode.findChildWithNameEquals("servlet",true).findChildsWithNameEquals("servlet-class").toString())
 //        System.out.println(webXmlNode.findChildWithNameEquals("servlet",true).findChildWithNameEquals("servlet-class",true).getText());
 //        System.out.println("try to get servlets");
 //        System.out.println(webXmlNode);
 
+            Thread.currentThread().setContextClassLoader(cl);
+
             Context context = createContext(appBase);
+            context.setContextDir(unpacked);
             for (Node listenerNode : webXmlNode.findAll("listener")) {
                 Class clazz = cl.loadClass(listenerNode.get("listener-class").text());
                 context.addContextListener((ServletContextListener) clazz.newInstance());
