@@ -22,9 +22,8 @@ public class CustomFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (handler != null) {
+        if (handler != null)
             handler.handle(request, response, chain);
-        }
     }
 
     @Override
