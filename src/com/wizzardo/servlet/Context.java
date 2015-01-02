@@ -1,27 +1,44 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.tools.misc.UncheckedThrow;
+
 import javax.servlet.*;
 import javax.servlet.descriptor.JspConfigDescriptor;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author: wizzardo
  * Date: 31.10.14
  */
 public class Context implements ServletContext {
+    private static final int MAJOR_SERVLET_VERSION = 3;
+    private static final int MINOR_SERVLET_VERSION = 0;
+
     protected String host;
     protected int port;
     protected String contextPath;
+    protected File contextDir;
     protected UrlMapping<Servlet> servletsMapping = new UrlMapping<>();
     protected List<ServletContextListener> contextListeners = new ArrayList<>();
+    protected Map<String, Object> attributes = new ConcurrentHashMap<>();
+    protected Map<String, String> initParams = new ConcurrentHashMap<>();
+    protected boolean initialized = false;
 
     public Context(String host, int port, String contextPath) {
         this.host = host;
         this.port = port;
         this.contextPath = contextPath;
+    }
+
+    void setContextDir(File contextDir) {
+        this.contextDir = contextDir;
     }
 
     public String getContextPath() {
@@ -63,6 +80,7 @@ public class Context implements ServletContext {
         ServletContextEvent event = new ServletContextEvent(this);
         for (ServletContextListener listener : contextListeners)
             listener.contextInitialized(event);
+        initialized = true;
     }
 
     protected void onDestroy() {
@@ -81,12 +99,12 @@ public class Context implements ServletContext {
 
     @Override
     public int getMajorVersion() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return MAJOR_SERVLET_VERSION;
     }
 
     @Override
     public int getMinorVersion() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return MINOR_SERVLET_VERSION;
     }
 
     @Override
@@ -116,7 +134,11 @@ public class Context implements ServletContext {
 
     @Override
     public InputStream getResourceAsStream(String path) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        try {
+            return new FileInputStream(new File(contextDir, path));
+        } catch (FileNotFoundException e) {
+            throw UncheckedThrow.rethrow(e);
+        }
     }
 
     @Override
@@ -171,37 +193,43 @@ public class Context implements ServletContext {
 
     @Override
     public String getInitParameter(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return initParams.get(name);
     }
 
     @Override
     public Enumeration<String> getInitParameterNames() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return Collections.enumeration(initParams.keySet());
     }
 
     @Override
     public boolean setInitParameter(String name, String value) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (initialized)
+            throw new IllegalStateException("this ServletContext has already been initialized");
+
+        return initParams.putIfAbsent(name, value) != null;
     }
 
     @Override
     public Object getAttribute(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return attributes.get(name);
     }
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return Collections.enumeration(attributes.keySet());
     }
 
     @Override
     public void setAttribute(String name, Object object) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (object == null)
+            removeAttribute(name);
+        else
+            attributes.put(name, object);
     }
 
     @Override
     public void removeAttribute(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        attributes.remove(name);
     }
 
     @Override
