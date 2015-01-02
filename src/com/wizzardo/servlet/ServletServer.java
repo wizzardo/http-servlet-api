@@ -147,6 +147,10 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 Class clazz = cl.loadClass(listenerNode.get("listener-class").text());
                 context.addContextListener((ServletContextListener) clazz.newInstance());
             }
+
+            for (Node contextParam : webXmlNode.findAll("context-param")) {
+                context.setInitParameter(contextParam.get("param-name").text(), contextParam.get("param-value").text());
+            }
             context.onInit();
 
             for (Node servletNode : webXmlNode.findAll("servlet")) {
