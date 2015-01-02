@@ -13,19 +13,21 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Session implements HttpSession {
 
+    private ServletContext servletContext;
     private com.wizzardo.http.Session session;
     private ConcurrentHashMap<String, Object> map = new ConcurrentHashMap<String, Object>();
     private boolean isNew = true;
     private long creationTime = System.currentTimeMillis();
     private long lastAccessedTime = creationTime;
 
-    private Session(com.wizzardo.http.Session session) {
+    private Session(com.wizzardo.http.Session session, ServletContext context) {
         this.session = session;
-        session.put("data", this);
+        this.servletContext = context;
+        session.put("session", this);
     }
 
-    static Session create(com.wizzardo.http.Session session) {
-        return new Session(session);
+    static Session create(com.wizzardo.http.Session session, ServletContext context) {
+        return new Session(session, context);
     }
 
     static Session get(com.wizzardo.http.Session session) {
@@ -57,7 +59,7 @@ public class Session implements HttpSession {
 
     @Override
     public ServletContext getServletContext() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return servletContext;
     }
 
     @Override
@@ -72,7 +74,17 @@ public class Session implements HttpSession {
 
     @Override
     public HttpSessionContext getSessionContext() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return new HttpSessionContext() {
+            @Override
+            public HttpSession getSession(String sessionId) {
+                return null;
+            }
+
+            @Override
+            public Enumeration<String> getIds() {
+                return Collections.emptyEnumeration();
+            }
+        };
     }
 
     @Override

@@ -158,7 +158,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
                 session.updateAccessedTime();
                 session.setIsNew(false);
             } else if (b)
-                session = Session.create(session());
+                session = Session.create(session(), context);
         }
 
         return session;
