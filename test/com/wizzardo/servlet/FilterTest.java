@@ -17,6 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FilterTest extends ServerTest {
 
     CustomFilter filter;
+    AtomicInteger inits = new AtomicInteger();
+    AtomicInteger destoryes = new AtomicInteger();
 
     @Override
     protected void init() {
@@ -24,13 +26,29 @@ public class FilterTest extends ServerTest {
 
         filter = new CustomFilter();
         filter.onInit = it -> {
-            System.out.println("onInit");
+            inits.incrementAndGet();
             return null;
         };
         filter.onDestroy = () -> {
-            System.out.println("onDestroy");
+            destoryes.incrementAndGet();
         };
         ((ServletContextHandler) jetty.getHandler()).addFilter(new FilterHolder(filter), "/*", EnumSet.of(DispatcherType.REQUEST));
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+
+        Assert.assertEquals(1, inits.get());
+        Assert.assertEquals(0, destoryes.get());
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        Assert.assertEquals(1, inits.get());
+        Assert.assertEquals(1, destoryes.get());
     }
 
     @Test
