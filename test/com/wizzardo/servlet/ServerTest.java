@@ -1,6 +1,6 @@
 package com.wizzardo.servlet;
 
-import com.wizzardo.tools.http.HttpClient;
+import com.wizzardo.tools.http.HttpSession;
 import com.wizzardo.tools.http.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -26,6 +26,8 @@ public class ServerTest {
     protected ServletServer myServer;
     protected int jettyPort = 9080;
     protected int myPort = 9081;
+    protected HttpSession jettySession = new HttpSession();
+    protected HttpSession mySession = new HttpSession();
 
     @Before
     public void setUp() throws Exception {
@@ -78,15 +80,15 @@ public class ServerTest {
     }
 
     protected com.wizzardo.tools.http.Request jettyRequest(String path) {
-        return createRequest("http://localhost:" + jettyPort + path);
+        return createRequest(jettySession, "http://localhost:" + jettyPort + path);
     }
 
     protected com.wizzardo.tools.http.Request myRequest(String path) {
-        return createRequest("http://localhost:" + myPort + path);
+        return createRequest(mySession, "http://localhost:" + myPort + path);
     }
 
-    protected com.wizzardo.tools.http.Request createRequest(String url) {
-        return HttpClient.createRequest(url)
+    protected com.wizzardo.tools.http.Request createRequest(HttpSession session, String url) {
+        return session.createRequest(url)
                 .disableRedirects()
                 .header("Connection", "Close");
     }
