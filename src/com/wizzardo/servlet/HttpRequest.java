@@ -153,12 +153,12 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
     @Override
     public HttpSession getSession(boolean b) {
         if (session == null) {
-            session = Session.get(session());
+            session = Session.get(session(context.getContextPath()));
             if (session != null) {
                 session.updateAccessedTime();
                 session.setIsNew(false);
             } else if (b)
-                session = Session.create(session(), context);
+                session = Session.create(session(context.getContextPath()), context);
         }
 
         return session;
