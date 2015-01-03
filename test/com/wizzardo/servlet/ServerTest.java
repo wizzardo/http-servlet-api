@@ -112,6 +112,17 @@ public class ServerTest {
         Assert.assertEquals(strategy.exec(jettyRequest()), strategy.exec(myRequest()));
     }
 
+    protected void testGet(CustomServlet.Handler handler) throws IOException {
+        testGet(handler, 1);
+    }
+
+    protected void testGet(CustomServlet.Handler handler, int repeat) throws IOException {
+        servlet.get = handler;
+        for (int i = 0; i < repeat; i++) {
+            test(request -> request.get().asString());
+        }
+    }
+
     protected void test(TestStrategy strategy, String path) throws IOException {
         path = CONTEXT_PATH + SERVLET_PATH + path;
         Assert.assertEquals(strategy.exec(jettyRequest(path)), strategy.exec(myRequest(path)));
