@@ -130,6 +130,8 @@ public class Session implements HttpSession {
     @Override
     public void invalidate() {
         map.clear();
+        session.remove("session");
+        session.invalidate();
     }
 
     @Override
