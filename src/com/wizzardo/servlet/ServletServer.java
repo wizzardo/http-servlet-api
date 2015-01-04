@@ -114,7 +114,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
 
     public void registerWar(File war, String appBase) {
         try {
-            File unpacked = new File("/tmp/" + war.getName());
+            File unpacked = new File("/tmp/" + war.getName()+"_");
             ZipTools.unzip(war, unpacked);
 
             File webXML = new File(unpacked, "WEB-INF/web.xml");
