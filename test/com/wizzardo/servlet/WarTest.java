@@ -4,6 +4,11 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -13,20 +18,34 @@ import java.io.IOException;
 public class WarTest extends ServerTest {
 
     @Override
-    protected void init() {
-        String warFile = "/home/wizzardo/IdeaProjects/httpTester/out/http.war";
+    protected void init() throws IOException {
+        WarBuilder builder = new WarBuilder();
+        builder.addClass(OkServlet.class);
+        builder.getWebXmlBuilder()
+                .append(new WarBuilder.ServletMapping(OkServlet.class, "OkServlet").appendUrlPattern("/ok"));
+        File war = builder.build("/tmp/http.war");
+        war.deleteOnExit();
+
         WebAppContext webapp = new WebAppContext();
         webapp.setContextPath("/http");
-        webapp.setWar(warFile);
+        webapp.setWar(war.getAbsolutePath());
 
         jetty.setHandler(webapp);
 
-        myServer.registerWar(warFile);
+        myServer.registerWar(war.getAbsolutePath());
     }
 
     @Test
     public void testOk() throws IOException {
         Assert.assertEquals("ok", jettyRequest("/http/ok").get().asString());
         Assert.assertEquals("ok", myRequest("/http/ok").get().asString());
+    }
+
+    public static class OkServlet extends HttpServlet {
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            resp.setContentLength(2);
+            resp.getWriter().write("ok");
+        }
     }
 }

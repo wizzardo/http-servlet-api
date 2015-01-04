@@ -21,7 +21,7 @@ public class FilterTest extends ServerTest {
     AtomicInteger destoryes = new AtomicInteger();
 
     @Override
-    protected void init() {
+    protected void init() throws IOException {
         super.init();
 
         filter = new CustomFilter();

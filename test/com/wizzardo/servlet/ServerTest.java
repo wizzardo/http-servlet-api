@@ -40,7 +40,7 @@ public class ServerTest {
         startServers();
     }
 
-    protected void init() {
+    protected void init() throws IOException {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath(CONTEXT_PATH);
         jetty.setHandler(context);
