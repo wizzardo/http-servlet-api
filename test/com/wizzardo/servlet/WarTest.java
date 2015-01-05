@@ -15,14 +15,12 @@ import java.io.IOException;
  * @author: wizzardo
  * Date: 06.12.14
  */
-public class WarTest extends ServerTest {
+public abstract class WarTest extends ServerTest {
 
     @Override
     protected void init() throws IOException {
         WarBuilder builder = new WarBuilder();
-        builder.addClass(OkServlet.class);
-        builder.getWebXmlBuilder()
-                .append(new WarBuilder.ServletMapping(OkServlet.class, "OkServlet").appendUrlPattern("/ok"));
+        customizeWar(builder);
         File war = builder.build("/tmp/http.war");
         war.deleteOnExit();
 
@@ -35,17 +33,30 @@ public class WarTest extends ServerTest {
         myServer.registerWar(war.getAbsolutePath());
     }
 
-    @Test
-    public void testOk() throws IOException {
-        Assert.assertEquals("ok", jettyRequest("/http/ok").get().asString());
-        Assert.assertEquals("ok", myRequest("/http/ok").get().asString());
-    }
+    protected abstract void customizeWar(WarBuilder warBuilder);
 
-    public static class OkServlet extends HttpServlet {
+    public static class TestOk extends WarTest {
+
         @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            resp.setContentLength(2);
-            resp.getWriter().write("ok");
+        protected void customizeWar(WarBuilder builder) {
+            builder.addClass(OkServlet.class);
+            builder.getWebXmlBuilder()
+                    .append(new WarBuilder.ServletMapping(OkServlet.class).url("/ok"));
+        }
+
+        @Test
+        public void testOk() throws IOException {
+            Assert.assertEquals("ok", jettyRequest("/http/ok").get().asString());
+            Assert.assertEquals("ok", myRequest("/http/ok").get().asString());
+        }
+
+        public static class OkServlet extends HttpServlet {
+            @Override
+            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                resp.setContentLength(2);
+                resp.getWriter().write("ok");
+            }
         }
     }
+
 }

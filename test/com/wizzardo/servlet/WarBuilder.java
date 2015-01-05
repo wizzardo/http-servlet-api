@@ -112,9 +112,17 @@ public class WarBuilder {
             this.servletName = servletName;
         }
 
+        public ServletMapping(Class servletClass) {
+            this(servletClass, servletClass.getSimpleName());
+        }
+
         public ServletMapping appendUrlPattern(String pattern) {
             urlPatterns.add(pattern);
             return this;
+        }
+
+        public ServletMapping url(String pattern) {
+            return appendUrlPattern(pattern);
         }
     }
 
