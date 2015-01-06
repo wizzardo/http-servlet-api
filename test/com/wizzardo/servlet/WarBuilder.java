@@ -86,16 +86,22 @@ public class WarBuilder {
 
             for (ServletMapping servletMapping : servletMappings) {
                 Node servlet = new Node("servlet");
+                root.add(servlet);
                 servlet.add(new Node("servlet-name").addText(servletMapping.servletName));
                 servlet.add(new Node("servlet-class").addText(servletMapping.servletClass));
-                root.add(servlet);
+                for (Map.Entry<String, String> parameter : servletMapping.params.entrySet()) {
+                    Node param = new Node("init-param");
+                    servlet.add(param);
+                    servlet.add(new Node("param-name").addText(parameter.getKey()));
+                    servlet.add(new Node("param-value").addText(parameter.getValue()));
+                }
 
                 Node mapping = new Node("servlet-mapping");
+                root.add(mapping);
                 for (String urlPattern : servletMapping.urlPatterns) {
                     mapping.add(new Node("servlet-name").addText(servletMapping.servletName));
                     mapping.add(new Node("url-pattern").addText(urlPattern));
                 }
-                root.add(mapping);
             }
 
             return root.toXML(true);
@@ -106,6 +112,7 @@ public class WarBuilder {
         private String servletClass;
         private String servletName;
         private Set<String> urlPatterns = new LinkedHashSet<>();
+        private Map<String, String> params = new LinkedHashMap<>();
 
         public ServletMapping(Class servletClass, String servletName) {
             this.servletClass = servletClass.getName();
@@ -123,6 +130,11 @@ public class WarBuilder {
 
         public ServletMapping url(String pattern) {
             return appendUrlPattern(pattern);
+        }
+
+        public ServletMapping param(String key, String value) {
+            params.put(key, value);
+            return this;
         }
     }
 
