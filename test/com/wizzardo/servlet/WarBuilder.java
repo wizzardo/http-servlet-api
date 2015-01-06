@@ -92,8 +92,8 @@ public class WarBuilder {
                 for (Map.Entry<String, String> parameter : servletMapping.params.entrySet()) {
                     Node param = new Node("init-param");
                     servlet.add(param);
-                    servlet.add(new Node("param-name").addText(parameter.getKey()));
-                    servlet.add(new Node("param-value").addText(parameter.getValue()));
+                    param.add(new Node("param-name").addText(parameter.getKey()));
+                    param.add(new Node("param-value").addText(parameter.getValue()));
                 }
 
                 Node mapping = new Node("servlet-mapping");

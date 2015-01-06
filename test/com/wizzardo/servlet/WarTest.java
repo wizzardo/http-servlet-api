@@ -4,12 +4,16 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author: wizzardo
@@ -19,6 +23,7 @@ public abstract class WarTest extends ServerTest {
 
     @Override
     protected void init() throws IOException {
+        contextPath = "/http";
         WarBuilder builder = new WarBuilder();
         customizeWar(builder);
         File war = builder.build("/tmp/http.war");
@@ -39,6 +44,7 @@ public abstract class WarTest extends ServerTest {
 
         @Override
         protected void customizeWar(WarBuilder builder) {
+            servletPath = "/ok";
             builder.addClass(OkServlet.class);
             builder.getWebXmlBuilder()
                     .append(new WarBuilder.ServletMapping(OkServlet.class).url("/ok"));
@@ -46,8 +52,8 @@ public abstract class WarTest extends ServerTest {
 
         @Test
         public void testOk() throws IOException {
-            Assert.assertEquals("ok", jettyRequest("/http/ok").get().asString());
-            Assert.assertEquals("ok", myRequest("/http/ok").get().asString());
+            Assert.assertEquals("ok", jettyRequest().get().asString());
+            Assert.assertEquals("ok", myRequest().get().asString());
         }
 
         public static class OkServlet extends HttpServlet {
@@ -55,6 +61,70 @@ public abstract class WarTest extends ServerTest {
             protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
                 resp.setContentLength(2);
                 resp.getWriter().write("ok");
+            }
+        }
+    }
+
+    public static class TestServletParams extends WarTest {
+
+        @Override
+        protected void customizeWar(WarBuilder builder) {
+            servletPath = "/params";
+            builder.addClass(ParamServlet.class);
+            builder.getWebXmlBuilder()
+                    .append(new WarBuilder.ServletMapping(ParamServlet.class)
+                                    .url("/params")
+                                    .param("foo", "bar")
+                                    .param("key", "value")
+                    );
+        }
+
+        @Test
+        public void testOk() throws IOException {
+            test(request -> request.get().asString());
+            test(request -> request.param("param", "key").get().asString());
+            test(request -> request.param("param", "foo").get().asString());
+        }
+
+        public static class ParamServlet extends HttpServlet {
+
+            boolean initialized = false;
+
+            @Override
+            public void init(ServletConfig config) throws ServletException {
+                super.init(config);
+                Assert.assertEquals("ParamServlet", config.getServletName());
+
+                Map<String, String> initParams = new LinkedHashMap<>();
+                Enumeration<String> params = config.getInitParameterNames();
+                while (params.hasMoreElements()) {
+                    String param = params.nextElement();
+                    initParams.put(param, config.getInitParameter(param));
+                }
+
+                Assert.assertEquals(2, initParams.size());
+                Assert.assertEquals("bar", initParams.get("foo"));
+                Assert.assertEquals("value", initParams.get("key"));
+                initialized = true;
+            }
+
+            @Override
+            protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                Assert.assertTrue(initialized);
+                
+                String param = req.getParameter("param");
+                if (param == null) {
+                    int i = 0;
+                    Enumeration<String> params = getInitParameterNames();
+                    while (params.hasMoreElements()) {
+                        params.nextElement();
+                        i++;
+                    }
+                    resp.getWriter().write("params: " + i);
+                    return;
+                }
+
+                resp.getWriter().write(param + ": " + getInitParameter(param));
             }
         }
     }

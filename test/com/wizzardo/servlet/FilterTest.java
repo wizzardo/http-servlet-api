@@ -58,7 +58,7 @@ public class FilterTest extends ServerTest {
             Assert.assertEquals("/foo/bar", ((HttpServletRequest) req).getServletPath());
             counter.incrementAndGet();
         };
-        jettyRequest(CONTEXT_PATH + "/foo/bar").get().asString();
+        jettyRequest(contextPath + "/foo/bar").get().asString();
         Assert.assertEquals(1, counter.get());
     }
 }

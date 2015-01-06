@@ -19,8 +19,8 @@ import java.util.Properties;
  * Date: 23.10.14
  */
 public class ServerTest {
-    protected final String CONTEXT_PATH = "/context";
-    protected final String SERVLET_PATH = "/servlet/";
+    protected String contextPath = "/context";
+    protected String servletPath = "/servlet/";
     protected CustomServlet servlet;
     protected Server jetty;
     protected ServletServer myServer;
@@ -42,14 +42,14 @@ public class ServerTest {
 
     protected void init() throws IOException {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.setContextPath(CONTEXT_PATH);
+        context.setContextPath(contextPath);
         jetty.setHandler(context);
 
         servlet = new CustomServlet();
-        context.addServlet(new ServletHolder(servlet), SERVLET_PATH + "*");
+        context.addServlet(new ServletHolder(servlet), servletPath + "*");
 
 
-        myServer.append(CONTEXT_PATH, SERVLET_PATH + "*", servlet);
+        myServer.append(contextPath, servletPath + "*", servlet);
     }
 
     protected void startServers() throws Exception {
@@ -72,11 +72,11 @@ public class ServerTest {
     }
 
     protected com.wizzardo.tools.http.Request jettyRequest() {
-        return jettyRequest(CONTEXT_PATH + SERVLET_PATH);
+        return jettyRequest(contextPath + servletPath);
     }
 
     protected com.wizzardo.tools.http.Request myRequest() {
-        return myRequest(CONTEXT_PATH + SERVLET_PATH);
+        return myRequest(contextPath + servletPath);
     }
 
     protected com.wizzardo.tools.http.Request jettyRequest(String path) {
@@ -99,7 +99,7 @@ public class ServerTest {
         });
     }
 
-    protected String enumerationToString(Enumeration enumeration) {
+    protected static String enumerationToString(Enumeration enumeration) {
         StringBuilder sb = new StringBuilder("[");
         while (enumeration.hasMoreElements()) {
             if (sb.length() > 1)
@@ -126,7 +126,7 @@ public class ServerTest {
     }
 
     protected void test(TestStrategy strategy, String path) throws IOException {
-        path = CONTEXT_PATH + SERVLET_PATH + path;
+        path = contextPath + servletPath + path;
         Assert.assertEquals(strategy.exec(jettyRequest(path)), strategy.exec(myRequest(path)));
     }
 
