@@ -71,6 +71,7 @@ public class WarBuilder {
 
     public static class WebXmlBuilder {
         private List<ServletMapping> servletMappings = new ArrayList<>();
+        private Map<String, String> contextParams = new LinkedHashMap<>();
 
         public WebXmlBuilder append(ServletMapping servletMapping) {
             servletMappings.add(servletMapping);
@@ -83,6 +84,13 @@ public class WarBuilder {
                     .attr("xmlns", "http://java.sun.com/xml/ns/javaee")
                     .attr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
                     .attr("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd");
+
+            for (Map.Entry<String, String> param : contextParams.entrySet()) {
+                Node contextParam = new Node("context-param");
+                root.add(contextParam);
+                contextParam.add(new Node("param-name").addText(param.getKey()));
+                contextParam.add(new Node("param-value").addText(param.getValue()));
+            }
 
             for (ServletMapping servletMapping : servletMappings) {
                 Node servlet = new Node("servlet");
@@ -105,6 +113,11 @@ public class WarBuilder {
             }
 
             return root.toXML(true);
+        }
+
+        public WebXmlBuilder param(String key, String value) {
+            contextParams.put(key, value);
+            return this;
         }
     }
 
