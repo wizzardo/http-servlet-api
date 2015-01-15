@@ -64,7 +64,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
     }
 
     protected void processRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException, ServletException {
-        String path = httpRequest.path();
+        String path = httpRequest.path().toString();
         Context context = getContext(path);
 
         if (!context.getContextPath().equals("/"))
@@ -114,7 +114,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
 
     public void registerWar(File war, String appBase) {
         try {
-            File unpacked = new File("/tmp/" + war.getName()+"_");
+            File unpacked = new File("/tmp/" + war.getName() + "_");
             ZipTools.unzip(war, unpacked);
 
             File webXML = new File(unpacked, "WEB-INF/web.xml");
@@ -167,6 +167,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                     servletConfig.put(param.get("param-name").text(), param.get("param-value").text());
                 }
                 servlet.init(servletConfig);
+                context.addServletToDestory(servlet);
 //            System.out.println("servletName: "+servletName);
                 Node m = webXmlNode.get("servlet-mapping/servlet-name[text()=" + servletName + "]").parent();
                 for (Node urlPattern : m.getAll("url-pattern")) {

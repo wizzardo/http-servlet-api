@@ -1,5 +1,6 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.http.UrlMapping;
 import com.wizzardo.tools.misc.UncheckedThrow;
 
 import javax.servlet.*;
@@ -26,6 +27,7 @@ public class Context implements ServletContext {
     protected String contextPath;
     protected File contextDir;
     protected UrlMapping<Servlet> servletsMapping = new UrlMapping<>();
+    protected List<Servlet> servletsToDestroy = new ArrayList<>();
     protected List<ServletContextListener> contextListeners = new ArrayList<>();
     protected Map<String, Object> attributes = new ConcurrentHashMap<>();
     protected Map<String, String> initParams = new ConcurrentHashMap<>();
@@ -83,8 +85,12 @@ public class Context implements ServletContext {
         initialized = true;
     }
 
+    protected void addServletToDestory(Servlet servlet) {
+        servletsToDestroy.add(servlet);
+    }
+
     protected void onDestroy() {
-        for (Servlet servlet : servletsMapping)
+        for (Servlet servlet : servletsToDestroy)
             servlet.destroy();
 
         ServletContextEvent event = new ServletContextEvent(this);
