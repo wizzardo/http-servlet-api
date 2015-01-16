@@ -1,5 +1,6 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.http.Path;
 import com.wizzardo.http.request.Header;
 import com.wizzardo.http.response.CookieBuilder;
 import com.wizzardo.http.response.Response;
@@ -134,10 +135,11 @@ public class HttpResponse extends Response implements HttpServletResponse {
         if (location.startsWith("/"))
             location = context.createAbsoluteUrl(location);
         else if (!location.startsWith("http://") && !location.startsWith("https://")) {
-            int i = request.path().lastIndexOf("/");
-            if (i >= 0)
-                location = request.path().substring(0, i + 1) + location;
-            location = context.createAbsoluteUrl(location);
+            Path path = request.path();
+            if (!path.isEndsWithSlash())
+                path = path.subPath(0, path.length() - 1);
+            path = path.add(location);
+            location = context.createAbsoluteUrl(path.toString());
         }
 
         setRedirectTemporarily(location);

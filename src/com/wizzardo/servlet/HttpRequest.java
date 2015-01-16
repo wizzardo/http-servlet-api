@@ -137,12 +137,12 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public String getRequestURI() {
-        return path();
+        return path().toString();
     }
 
     @Override
     public StringBuffer getRequestURL() {
-        return new StringBuffer(context.createAbsoluteUrl(path()));
+        return new StringBuffer(context.createAbsoluteUrl(path().toString()));
     }
 
     @Override

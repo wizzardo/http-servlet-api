@@ -1,6 +1,7 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.http.HttpServer;
+import com.wizzardo.http.Path;
 import com.wizzardo.http.response.Status;
 import com.wizzardo.tools.io.ZipTools;
 import com.wizzardo.tools.misc.UncheckedThrow;
@@ -22,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T> {
     protected Map<String, Context> contexts = new ConcurrentHashMap<>();
+    protected Context rootContext;
 
     public ServletServer(String ip, int port) {
         super(ip, port);
@@ -64,13 +66,13 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
     }
 
     protected void processRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException, ServletException {
-        String path = httpRequest.path().toString();
+        Path path = httpRequest.path();
         Context context = getContext(path);
 
-        if (!context.getContextPath().equals("/"))
-            path = path.substring(context.getContextPath().length());
+        if (!context.getContextPath().isEmpty())
+            path = path.subPath(1);
 
-        Servlet servlet = context.getServletsMapping().get(path);
+        Servlet servlet = context.getServletsMapping().get(httpRequest, path);
         httpRequest.setContext(context);
         httpResponse.setContext(context);
         if (servlet == null) {
@@ -82,16 +84,23 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         }
     }
 
-    protected Context getContext(String path) {
-        int i = path.indexOf("/", 1);
-        if (i == -1)
-            return contexts.get("/");
-        else
-            return contexts.get(path.substring(0, i));
+    protected Context getContext(Path path) {
+        if (path.length() == 0)
+            return rootContext;
+        else {
+            Context context = contexts.get(path.getPart(0));
+            if (context == null)
+                return rootContext;
+            else
+                return context;
+        }
     }
 
 
     public synchronized ServletServer append(String contextPath, String path, Servlet servlet) {
+        if (contextPath.startsWith("/"))
+            contextPath = contextPath.substring(1);
+
         Context context = contexts.get(contextPath);
         if (context == null)
             context = createContext(contextPath);
@@ -100,15 +109,17 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
     }
 
     public synchronized Context createContext(String contextPath) {
-        Context context = new Context(getHost(), getPort(), contextPath);
-        if (contexts.putIfAbsent(contextPath, context) != null)
+        Context context = new Context(getHost(), getPort(), "/" + contextPath);
+        if (contextPath.isEmpty())
+            rootContext = context;
+        else if (contexts.putIfAbsent(contextPath, context) != null)
             throw new IllegalStateException("Context with name '" + contextPath + "' was already initialized");
         return context;
     }
 
     public void registerWar(String path) {
         File war = new File(path);
-        String appBase = war.getName().equalsIgnoreCase("root.war") ? "/" : "/" + war.getName().substring(0, war.getName().length() - 4);
+        String appBase = war.getName().equalsIgnoreCase("root.war") ? "" : war.getName().substring(0, war.getName().length() - 4);
         registerWar(war, appBase);
     }
 
