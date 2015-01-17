@@ -68,6 +68,10 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
     protected void processRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException, ServletException {
         Path path = httpRequest.path();
         Context context = getContext(path);
+        if (context == null) {
+            httpResponse.setStatus(Status._404);
+            return;
+        }
 
         if (!context.getContextPath().isEmpty())
             path = path.subPath(1);
