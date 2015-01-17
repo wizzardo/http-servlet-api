@@ -114,7 +114,6 @@ public class RequestTest extends ServerTest {
             resp.getWriter().write(cookies);
         };
         test(request -> request.get().asString());
-        test(request -> request.header("Cookie", "").get().asString());
         test(request -> request.header("Cookie", "key=value").get().asString());
         test(request -> request.header("Cookie", "key=value;foo=bar").get().asString());
         test(request -> request.header("Cookie", "key=value; foo=bar; ikiki = ololo  ").get().asString());
