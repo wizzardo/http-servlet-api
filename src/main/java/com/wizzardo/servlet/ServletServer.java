@@ -7,6 +7,7 @@ import com.wizzardo.tools.io.ZipTools;
 import com.wizzardo.tools.misc.UncheckedThrow;
 import com.wizzardo.tools.xml.Node;
 
+import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
@@ -169,10 +170,6 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
             context.onInit();
 
             for (Node servletNode : webXmlNode.findAll("servlet")) {
-//        for(Node params:servletNode.getInnerNodes()){
-//            System.out.println(params.getName());
-//        }
-
                 Class clazz = cl.loadClass(servletNode.get("servlet-class").text());
                 Servlet servlet = (Servlet) clazz.newInstance();
                 String servletName = servletNode.get("servlet-name").text();
@@ -183,11 +180,26 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 }
                 servlet.init(servletConfig);
                 context.addServletToDestroy(servlet);
-//            System.out.println("servletName: "+servletName);
                 Node m = webXmlNode.get("servlet-mapping/servlet-name[text()=" + servletName + "]").parent();
                 for (Node urlPattern : m.getAll("url-pattern")) {
-//                System.out.println("map to "+appBase + urlPattern.text());
                     context.getServletsMapping().append(urlPattern.text(), servlet);
+                }
+            }
+
+            for (Node filterNode : webXmlNode.findAll("filter")) {
+                Class clazz = cl.loadClass(filterNode.get("filter-class").text());
+                Filter filter = (Filter) clazz.newInstance();
+                String filterName = filterNode.get("filter-name").text();
+
+                FilterConfig filterConfig = new FilterConfig(filterName);
+                for (Node param : filterNode.getAll("init-param")) {
+                    filterConfig.put(param.get("param-name").text(), param.get("param-value").text());
+                }
+                filter.init(filterConfig);
+                context.addFilterToDestroy(filter);
+                Node m = webXmlNode.get("filter-mapping/filter-name[text()=" + filterName + "]").parent();
+                for (Node urlPattern : m.getAll("url-pattern")) {
+                    context.getFiltersMapping().append(urlPattern.text(), filter);
                 }
             }
         } catch (Exception e) {
