@@ -27,7 +27,9 @@ public class Context implements ServletContext {
     protected String contextPath;
     protected File contextDir;
     protected UrlMapping<Servlet> servletsMapping = new UrlMapping<>();
+    protected UrlMapping<Filter> filtersMapping = new UrlMapping<>();
     protected List<Servlet> servletsToDestroy = new ArrayList<>();
+    protected List<Filter> filtersToDestroy = new ArrayList<>();
     protected List<ServletContextListener> contextListeners = new ArrayList<>();
     protected Map<String, Object> attributes = new ConcurrentHashMap<>();
     protected Map<String, String> initParams = new ConcurrentHashMap<>();
@@ -63,6 +65,10 @@ public class Context implements ServletContext {
         return servletsMapping;
     }
 
+    public UrlMapping<Filter> getFiltersMapping() {
+        return filtersMapping;
+    }
+
     public String createAbsoluteUrl(String path) {
         StringBuilder sb = new StringBuilder();
         if (isSecure())
@@ -85,13 +91,20 @@ public class Context implements ServletContext {
         initialized = true;
     }
 
-    protected void addServletToDestory(Servlet servlet) {
+    protected void addServletToDestroy(Servlet servlet) {
         servletsToDestroy.add(servlet);
+    }
+
+    protected void addFilterToDestroy(Filter filter) {
+        filtersToDestroy.add(filter);
     }
 
     protected void onDestroy() {
         for (Servlet servlet : servletsToDestroy)
             servlet.destroy();
+
+        for (Filter filter : filtersToDestroy)
+            filter.destroy();
 
         ServletContextEvent event = new ServletContextEvent(this);
         for (int i = contextListeners.size() - 1; i >= 0; i--)

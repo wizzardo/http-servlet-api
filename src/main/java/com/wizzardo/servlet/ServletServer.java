@@ -182,7 +182,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                     servletConfig.put(param.get("param-name").text(), param.get("param-value").text());
                 }
                 servlet.init(servletConfig);
-                context.addServletToDestory(servlet);
+                context.addServletToDestroy(servlet);
 //            System.out.println("servletName: "+servletName);
                 Node m = webXmlNode.get("servlet-mapping/servlet-name[text()=" + servletName + "]").parent();
                 for (Node urlPattern : m.getAll("url-pattern")) {
