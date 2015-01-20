@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -40,7 +41,7 @@ public class ServerTest {
         startServers();
     }
 
-    protected void init() throws IOException {
+    protected void init() throws IOException, ServletException {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath(contextPath);
         jetty.setHandler(context);

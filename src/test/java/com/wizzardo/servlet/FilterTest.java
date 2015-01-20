@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,7 +21,7 @@ public class FilterTest extends ServerTest {
     AtomicInteger destoryes = new AtomicInteger();
 
     @Override
-    protected void init() throws IOException {
+    protected void init() throws IOException, ServletException {
         super.init();
 
         filter = new CustomFilter();
@@ -40,7 +41,7 @@ public class FilterTest extends ServerTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Assert.assertEquals(1, inits.get());
+        Assert.assertEquals(2, inits.get());
         Assert.assertEquals(0, destoryes.get());
     }
 
@@ -48,8 +49,8 @@ public class FilterTest extends ServerTest {
     public void tearDown() throws Exception {
         super.tearDown();
 
-        Assert.assertEquals(1, inits.get());
-        Assert.assertEquals(1, destoryes.get());
+        Assert.assertEquals(2, inits.get());
+        Assert.assertEquals(2, destoryes.get());
     }
 
     @Test

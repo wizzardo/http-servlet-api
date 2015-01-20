@@ -139,8 +139,11 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         return this;
     }
 
-    public synchronized ServletServer append(String contextPath, String path, Filter filter) {
-        getOrCreateContext(contextPath).getFiltersMapping().add(path, filter);
+    public synchronized ServletServer append(String contextPath, String path, Filter filter) throws ServletException {
+        Context context = getOrCreateContext(contextPath);
+        context.getFiltersMapping().add(path, filter);
+        filter.init(new FilterConfig(filter.getClass().getCanonicalName() + "-" + filter.hashCode()));
+        context.addFilterToDestroy(filter);
         return this;
     }
 
