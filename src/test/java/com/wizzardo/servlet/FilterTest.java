@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import javax.servlet.DispatcherType;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,7 +31,9 @@ public class FilterTest extends ServerTest {
         filter.onDestroy = () -> {
             destoryes.incrementAndGet();
         };
-        ((ServletContextHandler) jetty.getHandler()).addFilter(new FilterHolder(filter), "/*", EnumSet.of(DispatcherType.REQUEST));
+        ((ServletContextHandler) jetty.getHandler()).addFilter(new FilterHolder(filter), servletPath + "*", EnumSet.of(DispatcherType.REQUEST));
+
+        myServer.append(contextPath, servletPath + "*", filter);
     }
 
     @Override
@@ -55,10 +56,27 @@ public class FilterTest extends ServerTest {
     public void filterTest() throws IOException {
         AtomicInteger counter = new AtomicInteger();
         filter.handler = (req, resp, chain) -> {
-            Assert.assertEquals("/foo/bar", ((HttpServletRequest) req).getServletPath());
             counter.incrementAndGet();
+            System.out.println("before chain");
+            if (counter.get() > 2)
+                chain.doFilter(req, resp);
+            else
+                resp.getWriter().write("filtered");
+            System.out.println("after chain");
         };
-        jettyRequest(contextPath + "/foo/bar").get().asString();
+        servlet.get = (req, resp) -> {
+            System.out.println("servlet");
+            resp.getWriter().write("ok");
+        };
+        Assert.assertEquals("filtered", jettyRequest().get().asString());
         Assert.assertEquals(1, counter.get());
+        Assert.assertEquals("filtered", myRequest().get().asString());
+        Assert.assertEquals(2, counter.get());
+
+        Assert.assertEquals("ok", jettyRequest().get().asString());
+        Assert.assertEquals(3, counter.get());
+        Assert.assertEquals("ok", myRequest().get().asString());
+        Assert.assertEquals(4, counter.get());
+        ;
     }
 }

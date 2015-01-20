@@ -10,12 +10,12 @@ import java.io.IOException;
  */
 public class CustomFilter implements Filter {
 
-    volatile CollectionTools.Closure<Void, FilterConfig> onInit;
+    volatile CollectionTools.Closure<Void, javax.servlet.FilterConfig> onInit;
     volatile Runnable onDestroy;
     volatile Handler handler;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(javax.servlet.FilterConfig filterConfig) throws ServletException {
         if (onInit != null)
             onInit.execute(filterConfig);
     }

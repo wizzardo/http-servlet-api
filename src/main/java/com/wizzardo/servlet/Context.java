@@ -1,5 +1,6 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.http.ChainUrlMapping;
 import com.wizzardo.http.UrlMapping;
 import com.wizzardo.tools.misc.UncheckedThrow;
 
@@ -27,7 +28,7 @@ public class Context implements ServletContext {
     protected String contextPath;
     protected File contextDir;
     protected UrlMapping<Servlet> servletsMapping = new UrlMapping<>();
-    protected UrlMapping<Filter> filtersMapping = new UrlMapping<>();
+    protected ChainUrlMapping<Filter> filtersMapping = new ChainUrlMapping<>();
     protected List<Servlet> servletsToDestroy = new ArrayList<>();
     protected List<Filter> filtersToDestroy = new ArrayList<>();
     protected List<ServletContextListener> contextListeners = new ArrayList<>();
@@ -65,7 +66,7 @@ public class Context implements ServletContext {
         return servletsMapping;
     }
 
-    public UrlMapping<Filter> getFiltersMapping() {
+    public ChainUrlMapping<Filter> getFiltersMapping() {
         return filtersMapping;
     }
 

@@ -1,5 +1,6 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.http.ChainUrlMapping;
 import com.wizzardo.http.HttpServer;
 import com.wizzardo.http.Path;
 import com.wizzardo.http.response.Status;
@@ -7,14 +8,14 @@ import com.wizzardo.tools.io.ZipTools;
 import com.wizzardo.tools.misc.UncheckedThrow;
 import com.wizzardo.tools.xml.Node;
 
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -77,16 +78,37 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         if (!context.getContextPath().isEmpty())
             path = path.subPath(1);
 
-        Servlet servlet = context.getServletsMapping().get(httpRequest, path);
         httpRequest.setContext(context);
         httpResponse.setContext(context);
-        if (servlet == null) {
-            httpResponse.setStatus(Status._404);
-        } else {
+
+        Servlet servlet = context.getServletsMapping().get(httpRequest, path);
+        ChainUrlMapping.Chain<Filter> filters = context.getFiltersMapping().get(httpRequest, path);
+        if (filters != null) {
+            Iterator<Filter> filterIterator = filters.iterator();
+            if (filterIterator.hasNext()) {
+                filterIterator.next().doFilter(httpRequest, httpResponse, new FilterChain() {
+                    @Override
+                    public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
+                        if (filterIterator.hasNext())
+                            filterIterator.next().doFilter(request, response, this);
+                        else
+                            processServlet(servlet, (HttpServletRequest) request, (HttpServletResponse) response);
+                    }
+                });
+            }
+        } else
+            processServlet(servlet, httpRequest, httpResponse);
+
+        if (httpResponse.hasWriter())
+            httpResponse.setBody(httpResponse.getData());
+    }
+
+
+    protected void processServlet(Servlet servlet, HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws ServletException, IOException {
+        if (servlet == null)
+            httpResponse.setStatus(Status._404.code);
+        else
             servlet.service(httpRequest, httpResponse);
-            if (httpResponse.hasWriter())
-                httpResponse.setBody(httpResponse.getData());
-        }
     }
 
     protected Context getContext(Path path) {
@@ -101,15 +123,24 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         }
     }
 
-
-    public synchronized ServletServer append(String contextPath, String path, Servlet servlet) {
+    protected Context getOrCreateContext(String contextPath) {
         if (contextPath.startsWith("/"))
             contextPath = contextPath.substring(1);
 
         Context context = contexts.get(contextPath);
         if (context == null)
             context = createContext(contextPath);
-        context.getServletsMapping().append(path, servlet);
+
+        return context;
+    }
+
+    public synchronized ServletServer append(String contextPath, String path, Servlet servlet) {
+        getOrCreateContext(contextPath).getServletsMapping().append(path, servlet);
+        return this;
+    }
+
+    public synchronized ServletServer append(String contextPath, String path, Filter filter) {
+        getOrCreateContext(contextPath).getFiltersMapping().add(path, filter);
         return this;
     }
 
@@ -199,7 +230,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 context.addFilterToDestroy(filter);
                 Node m = webXmlNode.get("filter-mapping/filter-name[text()=" + filterName + "]").parent();
                 for (Node urlPattern : m.getAll("url-pattern")) {
-                    context.getFiltersMapping().append(urlPattern.text(), filter);
+                    context.getFiltersMapping().add(urlPattern.text(), filter);
                 }
             }
         } catch (Exception e) {
