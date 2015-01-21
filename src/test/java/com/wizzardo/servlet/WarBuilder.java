@@ -4,6 +4,8 @@ import com.wizzardo.tools.io.FileTools;
 import com.wizzardo.tools.io.ZipTools;
 import com.wizzardo.tools.xml.Node;
 
+import javax.servlet.Filter;
+import javax.servlet.Servlet;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -71,10 +73,16 @@ public class WarBuilder {
 
     public static class WebXmlBuilder {
         private List<ServletMapping> servletMappings = new ArrayList<>();
+        private List<FilterMapping> filterMappings = new ArrayList<>();
         private Map<String, String> contextParams = new LinkedHashMap<>();
 
         public WebXmlBuilder append(ServletMapping servletMapping) {
             servletMappings.add(servletMapping);
+            return this;
+        }
+
+        public WebXmlBuilder append(FilterMapping filterMapping) {
+            filterMappings.add(filterMapping);
             return this;
         }
 
@@ -112,6 +120,26 @@ public class WarBuilder {
                 }
             }
 
+            for (FilterMapping filterMapping : filterMappings) {
+                Node filter = new Node("filter");
+                root.add(filter);
+                filter.add(new Node("filter-name").addText(filterMapping.filterName));
+                filter.add(new Node("filter-class").addText(filterMapping.filterClass));
+                for (Map.Entry<String, String> parameter : filterMapping.params.entrySet()) {
+                    Node param = new Node("init-param");
+                    filter.add(param);
+                    param.add(new Node("param-name").addText(parameter.getKey()));
+                    param.add(new Node("param-value").addText(parameter.getValue()));
+                }
+
+                Node mapping = new Node("filter-mapping");
+                root.add(mapping);
+                for (String urlPattern : filterMapping.urlPatterns) {
+                    mapping.add(new Node("filter-name").addText(filterMapping.filterName));
+                    mapping.add(new Node("url-pattern").addText(urlPattern));
+                }
+            }
+
             return root.toXML(true);
         }
 
@@ -127,12 +155,12 @@ public class WarBuilder {
         private Set<String> urlPatterns = new LinkedHashSet<>();
         private Map<String, String> params = new LinkedHashMap<>();
 
-        public ServletMapping(Class servletClass, String servletName) {
+        public ServletMapping(Class<? extends Servlet> servletClass, String servletName) {
             this.servletClass = servletClass.getName();
             this.servletName = servletName;
         }
 
-        public ServletMapping(Class servletClass) {
+        public ServletMapping(Class<? extends Servlet> servletClass) {
             this(servletClass, servletClass.getSimpleName());
         }
 
@@ -146,6 +174,36 @@ public class WarBuilder {
         }
 
         public ServletMapping param(String key, String value) {
+            params.put(key, value);
+            return this;
+        }
+    }
+
+    public static class FilterMapping {
+        private String filterClass;
+        private String filterName;
+        private Set<String> urlPatterns = new LinkedHashSet<>();
+        private Map<String, String> params = new LinkedHashMap<>();
+
+        public FilterMapping(Class<? extends Filter> filterClass, String filterName) {
+            this.filterClass = filterClass.getName();
+            this.filterName = filterName;
+        }
+
+        public FilterMapping(Class<? extends Filter> filterClass) {
+            this(filterClass, filterClass.getSimpleName());
+        }
+
+        public FilterMapping appendUrlPattern(String pattern) {
+            urlPatterns.add(pattern);
+            return this;
+        }
+
+        public FilterMapping url(String pattern) {
+            return appendUrlPattern(pattern);
+        }
+
+        public FilterMapping param(String key, String value) {
             params.put(key, value);
             return this;
         }
