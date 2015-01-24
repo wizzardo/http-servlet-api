@@ -134,8 +134,11 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         return context;
     }
 
-    public synchronized ServletServer append(String contextPath, String path, Servlet servlet) {
-        getOrCreateContext(contextPath).getServletsMapping().append(path, servlet);
+    public synchronized ServletServer append(String contextPath, String path, Servlet servlet) throws ServletException {
+        Context context = getOrCreateContext(contextPath);
+        context.getServletsMapping().append(path, servlet);
+        servlet.init(new ServletConfig(servlet.getClass().getCanonicalName() + "-" + servlet.hashCode()));
+        context.addServletToDestroy(servlet);
         return this;
     }
 
