@@ -1,4 +1,4 @@
-package com.wizzardo.servlet.wartests;
+package com.wizzardo.servlet.war;
 
 import com.wizzardo.servlet.WarBuilder;
 import com.wizzardo.servlet.WarTest;

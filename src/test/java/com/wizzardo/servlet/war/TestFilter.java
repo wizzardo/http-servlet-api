@@ -1,4 +1,4 @@
-package com.wizzardo.servlet.wartests;
+package com.wizzardo.servlet.war;
 
 import com.wizzardo.servlet.WarBuilder;
 import com.wizzardo.servlet.WarTest;
@@ -20,6 +20,7 @@ public class TestFilter extends WarTest {
     protected void customizeWar(WarBuilder builder) {
         servletPath = "/filtered";
         builder.addClass(SimpleServlet.class);
+        builder.addClass(SimpleFilter.class);
         builder.getWebXmlBuilder()
                 .append(new WarBuilder.ServletMapping(SimpleServlet.class).url("/filtered"))
                 .append(new WarBuilder.FilterMapping(SimpleFilter.class).url("/*"))
