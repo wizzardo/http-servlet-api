@@ -2,6 +2,7 @@ package com.wizzardo.servlet.war;
 
 import com.wizzardo.servlet.WarBuilder;
 import com.wizzardo.servlet.WarTest;
+import org.junit.Assert;
 import org.junit.Test;
 
 import javax.servlet.ServletException;
@@ -20,6 +21,8 @@ public class TestServletMapping extends WarTest {
         builder.addClass(EndsWithServlet.class);
         builder.getWebXmlBuilder()
                 .append(new WarBuilder.ServletMapping(SimpleServlet.class).url("/simple/*"))
+                .append(new WarBuilder.ServletMapping(StaticServlet.class).url("/simple"))
+                .append(new WarBuilder.ServletMapping(BarServlet.class).url("/simple/bar/*"))
                 .append(new WarBuilder.ServletMapping(EndsWithServlet.class).url("*.foo"))
         ;
     }
@@ -28,7 +31,16 @@ public class TestServletMapping extends WarTest {
     @Test
     public void test() throws IOException {
         servletPath = "";
+
+        Assert.assertEquals("StaticServlet", myRequest(contextPath + "/simple").get().asString());
+        Assert.assertEquals("SimpleServlet", myRequest(contextPath + "/simple/foo").get().asString());
+        Assert.assertEquals("BarServlet", myRequest(contextPath + "/simple/bar").get().asString());
+        Assert.assertEquals("EndsWithServlet", myRequest(contextPath + "/simple.foo").get().asString());
+        Assert.assertEquals("SimpleServlet", myRequest(contextPath + "/simple/1.foo").get().asString());
+        Assert.assertEquals("EndsWithServlet", myRequest(contextPath + "/bar.foo").get().asString());
+
         test(request -> request.get().asString(), "/simple");
+        test(request -> request.get().asString(), "/simple/bar");
         test(request -> request.get().asString(), "/simple.foo");
         test(request -> request.get().asString(), "/bar.foo");
     }
@@ -40,10 +52,12 @@ public class TestServletMapping extends WarTest {
         }
     }
 
-    public static class EndsWithServlet extends HttpServlet {
-        @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            resp.getWriter().write(getClass().getSimpleName());
-        }
+    public static class EndsWithServlet extends SimpleServlet {
+    }
+
+    public static class BarServlet extends SimpleServlet {
+    }
+
+    public static class StaticServlet extends SimpleServlet {
     }
 }
