@@ -6,8 +6,8 @@ package com.wizzardo.servlet;
  */
 public class FilterConfig extends CommonConfig implements javax.servlet.FilterConfig {
 
-    public FilterConfig(String filterName) {
-        super(filterName);
+    public FilterConfig(Context context, String name) {
+        super(context, name);
     }
 
     @Override

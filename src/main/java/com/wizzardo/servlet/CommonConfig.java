@@ -9,14 +9,16 @@ import java.util.HashMap;
  * Created by wizzardo on 18.01.15.
  */
 public class CommonConfig extends HashMap<String, String> {
+    protected Context context;
     protected String name;
 
-    public CommonConfig(String name) {
+    public CommonConfig(Context context, String name) {
+        this.context = context;
         this.name = name;
     }
 
     public ServletContext getServletContext() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return context;
     }
 
     public String getInitParameter(String s) {

@@ -6,8 +6,8 @@ package com.wizzardo.servlet;
  */
 public class ServletConfig extends CommonConfig implements javax.servlet.ServletConfig {
 
-    public ServletConfig(String servletName) {
-        super(servletName);
+    public ServletConfig(Context context, String name) {
+        super(context, name);
     }
 
     @Override
