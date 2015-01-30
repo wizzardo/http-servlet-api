@@ -75,9 +75,10 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
             return;
         }
 
-        if (!context.getContextPath().isEmpty())
+        if (!context.getContextPath().equals("/"))
             path = path.subPath(1);
 
+        httpRequest.setServletPath(path);
         httpRequest.setContext(context);
         httpResponse.setContext(context);
 
@@ -137,7 +138,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
     public synchronized ServletServer append(String contextPath, String path, Servlet servlet) throws ServletException {
         Context context = getOrCreateContext(contextPath);
         context.getServletsMapping().append(path, servlet);
-        servlet.init(new ServletConfig(servlet.getClass().getCanonicalName() + "-" + servlet.hashCode()));
+        servlet.init(new ServletConfig(context, servlet.getClass().getCanonicalName() + "-" + servlet.hashCode()));
         context.addServletToDestroy(servlet);
         return this;
     }
@@ -145,12 +146,15 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
     public synchronized ServletServer append(String contextPath, String path, Filter filter) throws ServletException {
         Context context = getOrCreateContext(contextPath);
         context.getFiltersMapping().add(path, filter);
-        filter.init(new FilterConfig(filter.getClass().getCanonicalName() + "-" + filter.hashCode()));
+        filter.init(new FilterConfig(context, filter.getClass().getCanonicalName() + "-" + filter.hashCode()));
         context.addFilterToDestroy(filter);
         return this;
     }
 
     public synchronized Context createContext(String contextPath) {
+        if (contextPath.equals("/"))
+            contextPath = "";
+
         Context context = new Context(getHost(), getPort(), "/" + contextPath);
         if (contextPath.isEmpty())
             rootContext = context;
@@ -211,7 +215,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 Servlet servlet = (Servlet) clazz.newInstance();
                 String servletName = servletNode.get("servlet-name").text();
 
-                ServletConfig servletConfig = new ServletConfig(servletName);
+                ServletConfig servletConfig = new ServletConfig(context, servletName);
                 for (Node param : servletNode.getAll("init-param")) {
                     servletConfig.put(param.get("param-name").text(), param.get("param-value").text());
                 }
@@ -228,7 +232,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 Filter filter = (Filter) clazz.newInstance();
                 String filterName = filterNode.get("filter-name").text();
 
-                FilterConfig filterConfig = new FilterConfig(filterName);
+                FilterConfig filterConfig = new FilterConfig(context, filterName);
                 for (Node param : filterNode.getAll("init-param")) {
                     filterConfig.put(param.get("param-name").text(), param.get("param-value").text());
                 }

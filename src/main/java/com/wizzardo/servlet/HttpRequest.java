@@ -1,6 +1,7 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.http.MultiValue;
+import com.wizzardo.http.Path;
 import com.wizzardo.http.request.MultiPartEntry;
 import com.wizzardo.http.request.Request;
 
@@ -30,12 +31,18 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
     private Cookie[] cookies;
     private boolean isAsyncStarted = false;
 
+    protected Path servletPath;
+
     public HttpRequest(ServletHttpConnection connection) {
         super(connection);
     }
 
     void setContext(Context context) {
         this.context = context;
+    }
+
+    void setServletPath(Path path) {
+        this.servletPath = path;
     }
 
     @Override
@@ -127,7 +134,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public Principal getUserPrincipal() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return null;
     }
 
     @Override
@@ -147,7 +154,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public String getServletPath() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return servletPath.toString();
     }
 
     @Override
@@ -247,7 +254,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public String getCharacterEncoding() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return null;
     }
 
     @Override
