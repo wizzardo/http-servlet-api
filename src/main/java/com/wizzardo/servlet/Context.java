@@ -188,17 +188,19 @@ public class Context implements ServletContext {
 
     @Override
     public void log(String msg) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        System.out.println(msg);
     }
 
     @Override
     public void log(Exception exception, String msg) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        System.out.println(msg);
+        exception.printStackTrace();
     }
 
     @Override
     public void log(String message, Throwable throwable) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        System.out.println(message);
+        throwable.printStackTrace();
     }
 
     @Override
