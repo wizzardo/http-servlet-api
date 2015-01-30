@@ -1,5 +1,6 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.epoll.readable.ReadableData;
 import com.wizzardo.http.Path;
 import com.wizzardo.http.request.Header;
 import com.wizzardo.http.response.CookieBuilder;
@@ -40,6 +41,9 @@ public class HttpResponse extends Response implements HttpServletResponse {
     private Context context;
     private HttpRequest request;
     private boolean committed = false;
+
+    protected String contentType;
+    protected String charset;
 
     boolean hasWriter() {
         return writer != null;
@@ -217,12 +221,15 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public String getCharacterEncoding() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return charset;
     }
 
     @Override
     public String getContentType() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (charset != null && contentType != null)
+            return contentType + "; charset=" + charset;
+
+        return contentType;
     }
 
     @Override
@@ -243,7 +250,7 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void setCharacterEncoding(String charset) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        this.charset = charset;
     }
 
     @Override
@@ -258,7 +265,7 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void setContentType(String type) {
-        header(Header.KEY_CONTENT_TYPE, type);
+        contentType = type;
     }
 
     @Override
@@ -295,6 +302,16 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
         buffer.reset();
         writer = null;
+    }
+
+    @Override
+    public ReadableData toReadableBytes() {
+        if (contentType != null && charset != null)
+            header(Header.KEY_CONTENT_TYPE, contentType + "; charset=" + charset);
+        else if (contentType != null)
+            header(Header.KEY_CONTENT_TYPE, contentType);
+
+        return super.toReadableBytes();
     }
 
     @Override
