@@ -279,7 +279,6 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void setBufferSize(int size) {
-        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     @Override
@@ -289,12 +288,10 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void flushBuffer() throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     @Override
     public void resetBuffer() {
-        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     @Override
