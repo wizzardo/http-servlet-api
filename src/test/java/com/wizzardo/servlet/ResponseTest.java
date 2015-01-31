@@ -171,5 +171,11 @@ public class ResponseTest extends ServerTest {
             resp.getWriter().write("тест");
         };
         test(request -> request.get().asString());
+
+        servlet.get = (req, resp) -> {
+            resp.setContentType("text/plain; charset=cp1251");
+            resp.getWriter().write("тест");
+        };
+        test(request -> request.get().asString());
     }
 }

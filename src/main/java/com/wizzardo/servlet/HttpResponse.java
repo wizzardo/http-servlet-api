@@ -268,7 +268,13 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void setContentType(String type) {
-        contentType = type;
+        int i = type.indexOf("charset=");
+        if (i == -1) {
+            contentType = type;
+        } else {
+            charset = type.substring(i + 8);
+            contentType = type.substring(0, type.lastIndexOf(";", i));
+        }
     }
 
     @Override
