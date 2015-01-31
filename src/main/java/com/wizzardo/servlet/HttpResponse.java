@@ -12,7 +12,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -243,7 +246,7 @@ public class HttpResponse extends Response implements HttpServletResponse {
             buffer = new ByteArrayOutputStream();
 
         if (writer == null)
-            writer = new PrintWriter(buffer);
+            writer = new PrintWriter(new OutputStreamWriter(buffer, charset != null ? Charset.forName(charset) : StandardCharsets.UTF_8), true);
 
         return writer;
     }

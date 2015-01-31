@@ -163,4 +163,13 @@ public class ResponseTest extends ServerTest {
         //last request must be with "Connection: close"
     }
 
+    @Test
+    public void charset() throws IOException {
+        servlet.get = (req, resp) -> {
+            resp.setContentType("text/plain");
+            resp.setCharacterEncoding("cp1251");
+            resp.getWriter().write("тест");
+        };
+        test(request -> request.get().asString());
+    }
 }
