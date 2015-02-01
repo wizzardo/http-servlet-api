@@ -103,22 +103,22 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public String encodeURL(String url) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return url;
     }
 
     @Override
     public String encodeRedirectURL(String url) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return url;
     }
 
     @Override
     public String encodeUrl(String url) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return url;
     }
 
     @Override
     public String encodeRedirectUrl(String url) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return url;
     }
 
     @Override
@@ -139,6 +139,9 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void sendRedirect(String location) throws IOException {
+        if (isCommitted())
+            throw new IllegalStateException("the response has already been committed");
+
         if (location.startsWith("/"))
             location = context.createAbsoluteUrl(location);
         else if (!location.startsWith("http://") && !location.startsWith("https://")) {
