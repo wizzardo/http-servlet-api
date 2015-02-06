@@ -13,7 +13,7 @@ version = '0.1'
 dependencies {
     compile files(
             '../Utils/out/tools.jar',
-            '../epollserver/out/artifacts/epollserver_jar/epollserver.jar',
+            '../epollserver/build/libs/epoll-0.1.jar',
             '../http/build/libs/http-0.1.jar'
     )
     compile 'javax.servlet:javax.servlet-api:3.1.0'
