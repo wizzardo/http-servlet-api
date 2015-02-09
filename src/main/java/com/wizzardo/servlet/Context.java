@@ -163,7 +163,7 @@ public class Context implements ServletContext {
 
     @Override
     public RequestDispatcher getRequestDispatcher(String path) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return new ServletRequestDispatcher(servletsMapping.get(path));
     }
 
     @Override

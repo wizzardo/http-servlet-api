@@ -378,7 +378,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public RequestDispatcher getRequestDispatcher(String s) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return context.getRequestDispatcher(s);
     }
 
     @Override
