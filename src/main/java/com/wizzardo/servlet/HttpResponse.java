@@ -43,7 +43,6 @@ public class HttpResponse extends Response implements HttpServletResponse {
     private String statusMessage;
     private Context context;
     private HttpRequest request;
-    private boolean committed = false;
 
     protected String contentType;
     protected String charset;
@@ -57,7 +56,9 @@ public class HttpResponse extends Response implements HttpServletResponse {
             return null;
 
         writer.flush();
-        return buffer.toByteArray();
+        byte[] bytes = buffer.toByteArray();
+        buffer.reset();
+        return bytes;
     }
 
     void setContext(Context context) {
@@ -126,10 +127,11 @@ public class HttpResponse extends Response implements HttpServletResponse {
         if (isCommitted())
             throw new IllegalStateException("the response has already been committed");
 
-        committed = true;
         setHeader(Header.KEY_CONTENT_TYPE, Header.VALUE_CONTENT_TYPE_HTML_UTF8);
         setBody(msg); //todo: render custom error page
         status = sc;
+
+        commit(request.connection());
     }
 
     @Override
@@ -291,15 +293,14 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public void flushBuffer() throws IOException {
+        if (!isCommitted())
+            commit(request.connection());
     }
 
     @Override
     public void resetBuffer() {
-    }
-
-    @Override
-    public boolean isCommitted() {
-        return committed || isProcessed();
+        if (isCommitted())
+            throw new IllegalStateException("the response has already been committed");
     }
 
     @Override
