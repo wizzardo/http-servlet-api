@@ -18,21 +18,31 @@ import java.io.IOException;
 public class TestDispatcher extends WarTest {
     @Override
     protected void customizeWar(WarBuilder builder) {
-        servletPath = "/test";
-        builder.addClass(Servlet1.class);
+        builder.addClass(ServletForward.class);
         builder.addClass(Servlet2.class);
+        builder.addClass(ServletInclude.class);
+        builder.addClass(Servlet3.class);
         builder.getWebXmlBuilder()
-                .append(new WarBuilder.ServletMapping(Servlet1.class).url("/test"))
-                .append(new WarBuilder.ServletMapping(Servlet2.class).url("/forward"));
+                .append(new WarBuilder.ServletMapping(ServletForward.class).url("/test_forwarded"))
+                .append(new WarBuilder.ServletMapping(Servlet2.class).url("/forward"))
+                .append(new WarBuilder.ServletMapping(ServletInclude.class).url("/test_included"))
+                .append(new WarBuilder.ServletMapping(Servlet3.class).url("/include"))
+        ;
     }
 
     @Test
-    public void testOk() throws IOException {
+    public void test_dispatcher() throws IOException {
+        servletPath = "/test_forwarded";
         Assert.assertEquals("forwarded", jettyRequest().get().asString());
         Assert.assertEquals("forwarded", myRequest().get().asString());
+
+
+        servletPath = "/test_included";
+        Assert.assertEquals("<b>included</b>", jettyRequest().get().asString());
+        Assert.assertEquals("<b>included</b>", myRequest().get().asString());
     }
 
-    public static class Servlet1 extends HttpServlet {
+    public static class ServletForward extends HttpServlet {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             RequestDispatcher requestDispatcher = req.getRequestDispatcher("/forward");
@@ -44,6 +54,25 @@ public class TestDispatcher extends WarTest {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             resp.getWriter().write("forwarded");
+            Assert.assertEquals("/forward", req.getServletPath());
+        }
+    }
+
+    public static class ServletInclude extends HttpServlet {
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            RequestDispatcher requestDispatcher = req.getRequestDispatcher("/include");
+            resp.getWriter().write("<b>");
+            requestDispatcher.include(req, resp);
+            resp.getWriter().write("</b>");
+        }
+    }
+
+    public static class Servlet3 extends HttpServlet {
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            resp.getWriter().write("included");
+            Assert.assertEquals("/test_included", req.getServletPath());
         }
     }
 }

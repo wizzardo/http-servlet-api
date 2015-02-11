@@ -32,6 +32,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
     private boolean isAsyncStarted = false;
 
     protected Path servletPath;
+    protected DispatcherType dispatcherType = DispatcherType.REQUEST;
 
     public HttpRequest(ServletHttpConnection connection) {
         super(connection);
@@ -438,7 +439,11 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public DispatcherType getDispatcherType() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return dispatcherType;
+    }
+
+    protected void setDispatcherType(DispatcherType dispatcherType) {
+        this.dispatcherType = dispatcherType;
     }
 
     private static class MultiPart implements Part {
