@@ -105,6 +105,9 @@ public class WarBuilder {
                 root.add(servlet);
                 servlet.add(new Node("servlet-name").addText(servletMapping.servletName));
                 servlet.add(new Node("servlet-class").addText(servletMapping.servletClass));
+                if (servletMapping.order >= 0)
+                    servlet.add(new Node("load-on-startup").addText(String.valueOf(servletMapping.order)));
+
                 for (Map.Entry<String, String> parameter : servletMapping.params.entrySet()) {
                     Node param = new Node("init-param");
                     servlet.add(param);
@@ -154,6 +157,7 @@ public class WarBuilder {
         private String servletName;
         private Set<String> urlPatterns = new LinkedHashSet<>();
         private Map<String, String> params = new LinkedHashMap<>();
+        private int order = -1;
 
         public ServletMapping(Class<? extends Servlet> servletClass, String servletName) {
             this.servletClass = servletClass.getName();
@@ -175,6 +179,11 @@ public class WarBuilder {
 
         public ServletMapping param(String key, String value) {
             params.put(key, value);
+            return this;
+        }
+
+        public ServletMapping loadOnStartup(int i) {
+            order = 1;
             return this;
         }
     }
