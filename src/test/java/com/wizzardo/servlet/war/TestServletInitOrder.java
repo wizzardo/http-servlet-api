@@ -10,14 +10,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by wizzardo on 12.02.15.
  */
 public class TestServletInitOrder extends WarTest {
-
-    static AtomicInteger counter = new AtomicInteger();
 
     @Override
     protected void customizeWar(WarBuilder builder) {
@@ -26,9 +23,9 @@ public class TestServletInitOrder extends WarTest {
         builder.addClass(BarServlet.class);
         builder.addClass(FooBarServlet.class);
         builder.getWebXmlBuilder()
-                .append(new WarBuilder.ServletMapping(FooServlet.class).url("/foo").loadOnStartup(2))
-                .append(new WarBuilder.ServletMapping(BarServlet.class).url("/bar").loadOnStartup(1))
-                .append(new WarBuilder.ServletMapping(FooBarServlet.class).url("/foobar").loadOnStartup(0))
+                .append(new WarBuilder.ServletMapping(FooServlet.class).url("/foo").loadOnStartup(3))
+                .append(new WarBuilder.ServletMapping(BarServlet.class).url("/bar").loadOnStartup(2))
+                .append(new WarBuilder.ServletMapping(FooBarServlet.class).url("/foobar").loadOnStartup(1))
         ;
     }
 
@@ -45,7 +42,16 @@ public class TestServletInitOrder extends WarTest {
 
         @Override
         public void init() throws ServletException {
-            value = "foo_" + counter.incrementAndGet();
+            Integer counter = (Integer) getServletContext().getAttribute("counter");
+            if (counter == null)
+                counter = 1;
+            value = getPrefix() + counter;
+//            System.out.println("init " + getServletContext().getClass().getCanonicalName() + " " + getClass().getSimpleName() + ": " + value);
+            getServletContext().setAttribute("counter", counter + 1);
+        }
+
+        protected String getPrefix() {
+            return "foo_";
         }
 
         @Override
@@ -56,15 +62,15 @@ public class TestServletInitOrder extends WarTest {
 
     public static class BarServlet extends FooServlet {
         @Override
-        public void init() throws ServletException {
-            value = "bar_" + counter.incrementAndGet();
+        protected String getPrefix() {
+            return "bar_";
         }
     }
 
     public static class FooBarServlet extends FooServlet {
         @Override
-        public void init() throws ServletException {
-            value = "foobar_" + counter.incrementAndGet();
+        protected String getPrefix() {
+            return "foobar_";
         }
     }
 }
