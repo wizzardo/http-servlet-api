@@ -15,8 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -82,7 +81,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         httpRequest.setContext(context);
         httpResponse.setContext(context);
 
-        Servlet servlet = context.getServletsMapping().get(httpRequest, path);
+        ServletHolder servletHolder = context.getServletsMapping().get(httpRequest, path);
         ChainUrlMapping.Chain<Filter> filters = context.getFiltersMapping().get(httpRequest, path);
         if (filters != null) {
             Iterator<Filter> filterIterator = filters.iterator();
@@ -93,12 +92,12 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                         if (filterIterator.hasNext())
                             filterIterator.next().doFilter(request, response, this);
                         else
-                            processServlet(servlet, (HttpServletRequest) request, (HttpServletResponse) response);
+                            processServlet(servletHolder.get(), (HttpServletRequest) request, (HttpServletResponse) response);
                     }
                 });
             }
         } else
-            processServlet(servlet, httpRequest, httpResponse);
+            processServlet(servletHolder.get(), httpRequest, httpResponse);
 
         if (httpResponse.hasWriter())
             httpResponse.setBody(httpResponse.getData());
@@ -137,9 +136,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
 
     public synchronized ServletServer append(String contextPath, String path, Servlet servlet) throws ServletException {
         Context context = getOrCreateContext(contextPath);
-        context.getServletsMapping().append(path, servlet);
-        servlet.init(new ServletConfig(context, servlet.getClass().getCanonicalName() + "-" + servlet.hashCode()));
-        context.addServletToDestroy(servlet);
+        context.getServletsMapping().append(path, new ServletHolder(servlet, new ServletConfig(context, servlet.getClass().getCanonicalName() + "-" + servlet.hashCode()), context));
         return this;
     }
 
@@ -210,6 +207,9 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
             }
             context.onInit();
 
+            int servletCounter = 0;
+            List<ServletHolder> servletsToInit = new ArrayList<>();
+
             for (Node servletNode : webXmlNode.findAll("servlet")) {
                 Class clazz = cl.loadClass(servletNode.get("servlet-class").text());
                 Servlet servlet = (Servlet) clazz.newInstance();
@@ -219,11 +219,18 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 for (Node param : servletNode.getAll("init-param")) {
                     servletConfig.put(param.get("param-name").text(), param.get("param-value").text());
                 }
-                servlet.init(servletConfig);
-                context.addServletToDestroy(servlet);
+                Node loadOnStartup = servletNode.get("load-on-startup");
+                int los = -1;
+                if (loadOnStartup != null)
+                    los = Integer.parseInt(loadOnStartup.text());
+
+                ServletHolder servletHolder = new ServletHolder(servlet, servletConfig, context, los, servletCounter++);
+                if (servletHolder.loadOnStartup > 0)
+                    servletsToInit.add(servletHolder);
+
                 Node m = webXmlNode.get("servlet-mapping/servlet-name[text()=" + servletName + "]").parent();
                 for (Node urlPattern : m.getAll("url-pattern")) {
-                    context.getServletsMapping().append(urlPattern.text(), servlet);
+                    context.getServletsMapping().append(urlPattern.text(), servletHolder);
                 }
             }
 
@@ -243,6 +250,20 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                     context.getFiltersMapping().add(urlPattern.text(), filter);
                 }
             }
+
+            servletsToInit.sort(new Comparator<ServletHolder>() {
+                @Override
+                public int compare(ServletHolder o1, ServletHolder o2) {
+                    int r = Integer.compare(o1.loadOnStartup, o2.loadOnStartup);
+                    if (r == 0)
+                        r = Integer.compare(o1.order, o2.order);
+                    return r;
+                }
+            });
+
+            for (ServletHolder holder : servletsToInit)
+                holder.init();
+
         } catch (Exception e) {
             throw UncheckedThrow.rethrow(e);
         }

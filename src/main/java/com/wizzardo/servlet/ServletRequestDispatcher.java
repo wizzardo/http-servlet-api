@@ -10,11 +10,11 @@ import java.util.Locale;
  */
 public class ServletRequestDispatcher implements RequestDispatcher {
 
-    private Servlet servlet;
+    private ServletHolder servletHolder;
     private String path;
 
-    public ServletRequestDispatcher(Servlet servlet, String path) {
-        this.servlet = servlet;
+    public ServletRequestDispatcher(ServletHolder servlet, String path) {
+        this.servletHolder = servlet;
         this.path = path;
     }
 
@@ -27,7 +27,7 @@ public class ServletRequestDispatcher implements RequestDispatcher {
         req.setDispatcherType(DispatcherType.FORWARD);
 
         HttpResponse resp = (HttpResponse) response;
-        servlet.service(new DispatchedRequest(req, path), response);
+        servletHolder.get().service(new DispatchedRequest(req, path), response);
 
         if (!resp.isCommitted() && resp.hasWriter())
             resp.setBody(resp.getData());
@@ -40,8 +40,8 @@ public class ServletRequestDispatcher implements RequestDispatcher {
         HttpRequest req = (HttpRequest) request;
         req.setDispatcherType(DispatcherType.INCLUDE);
 
-        servlet.service(request, new ReadOnlyHeadersWrapper((HttpServletResponse) response));
-//        servlet.service(request, response);
+        servletHolder.get().service(request, new ReadOnlyHeadersWrapper((HttpServletResponse) response));
+//        servletHolder.service(request, response);
     }
 
     private static class DispatchedRequest extends HttpServletRequestWrapper {

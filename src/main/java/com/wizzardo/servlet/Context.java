@@ -27,7 +27,7 @@ public class Context implements ServletContext {
     protected int port;
     protected String contextPath;
     protected File contextDir;
-    protected UrlMapping<Servlet> servletsMapping = new UrlMapping<>();
+    protected UrlMapping<ServletHolder> servletsMapping = new UrlMapping<>();
     protected ChainUrlMapping<Filter> filtersMapping = new ChainUrlMapping<>();
     protected List<Servlet> servletsToDestroy = new ArrayList<>();
     protected List<Filter> filtersToDestroy = new ArrayList<>();
@@ -62,7 +62,7 @@ public class Context implements ServletContext {
         return false;
     }
 
-    public UrlMapping<Servlet> getServletsMapping() {
+    public UrlMapping<ServletHolder> getServletsMapping() {
         return servletsMapping;
     }
 
