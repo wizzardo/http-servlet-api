@@ -183,7 +183,7 @@ public class WarBuilder {
         }
 
         public ServletMapping loadOnStartup(int i) {
-            order = 1;
+            order = i;
             return this;
         }
     }
