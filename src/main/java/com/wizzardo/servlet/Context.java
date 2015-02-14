@@ -173,17 +173,17 @@ public class Context implements ServletContext {
 
     @Override
     public Servlet getServlet(String name) throws ServletException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return null;
     }
 
     @Override
     public Enumeration<Servlet> getServlets() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return Collections.emptyEnumeration();
     }
 
     @Override
     public Enumeration<String> getServletNames() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return Collections.emptyEnumeration();
     }
 
     @Override
