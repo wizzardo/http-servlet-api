@@ -15,6 +15,7 @@ public class ServletHolder {
 
     final int loadOnStartup;
     final int order;
+    final String name;
 
     public ServletHolder(Servlet servlet, ServletConfig servletConfig, Context context, int loadOnStartup, int order) {
         this.servlet = servlet;
@@ -22,6 +23,7 @@ public class ServletHolder {
         this.context = context;
         this.loadOnStartup = loadOnStartup;
         this.order = order;
+        this.name = servletConfig.getServletName();
     }
 
     public ServletHolder(Servlet servlet, ServletConfig servletConfig, Context context) {

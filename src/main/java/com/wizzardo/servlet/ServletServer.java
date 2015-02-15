@@ -81,7 +81,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         httpRequest.setContext(context);
         httpResponse.setContext(context);
 
-        ServletHolder servletHolder = context.getServletsMapping().get(httpRequest, path);
+        ServletHolder servletHolder = context.getServletHolder(httpRequest, path);
         ChainUrlMapping.Chain<Filter> filters = context.getFiltersMapping().get(httpRequest, path);
         if (filters != null) {
             Iterator<Filter> filterIterator = filters.iterator();
@@ -136,7 +136,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
 
     public synchronized ServletServer append(String contextPath, String path, Servlet servlet) throws ServletException {
         Context context = getOrCreateContext(contextPath);
-        context.getServletsMapping().append(path, new ServletHolder(servlet, new ServletConfig(context, servlet.getClass().getCanonicalName() + "-" + servlet.hashCode()), context));
+        context.addServletHolder(path, new ServletHolder(servlet, new ServletConfig(context, servlet.getClass().getCanonicalName() + "-" + servlet.hashCode()), context));
         return this;
     }
 
@@ -230,7 +230,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
 
                 Node m = webXmlNode.get("servlet-mapping/servlet-name[text()=" + servletName + "]").parent();
                 for (Node urlPattern : m.getAll("url-pattern")) {
-                    context.getServletsMapping().append(urlPattern.text(), servletHolder);
+                    context.addServletHolder(urlPattern.text(), servletHolder);
                 }
             }
 

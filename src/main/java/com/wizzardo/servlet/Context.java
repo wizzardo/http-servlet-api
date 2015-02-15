@@ -1,6 +1,7 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.http.ChainUrlMapping;
+import com.wizzardo.http.Path;
 import com.wizzardo.http.UrlMapping;
 import com.wizzardo.tools.misc.UncheckedThrow;
 
@@ -34,6 +35,7 @@ public class Context implements ServletContext {
     protected List<ServletContextListener> contextListeners = new ArrayList<>();
     protected Map<String, Object> attributes = new ConcurrentHashMap<>();
     protected Map<String, String> initParams = new ConcurrentHashMap<>();
+    protected Map<String, ServletHolder> servlets = new ConcurrentHashMap<>();
     protected boolean initialized = false;
 
     public Context(String host, int port, String contextPath) {
@@ -62,12 +64,17 @@ public class Context implements ServletContext {
         return false;
     }
 
-    public UrlMapping<ServletHolder> getServletsMapping() {
-        return servletsMapping;
-    }
-
     public ChainUrlMapping<Filter> getFiltersMapping() {
         return filtersMapping;
+    }
+
+    public void addServletHolder(String path, ServletHolder servletHolder) {
+        servletsMapping.append(path, servletHolder);
+        servlets.put(servletHolder.name, servletHolder);
+    }
+
+    public ServletHolder getServletHolder(HttpRequest request, Path path) {
+        return servletsMapping.get(request, path);
     }
 
     public String createAbsoluteUrl(String path) {
@@ -168,7 +175,7 @@ public class Context implements ServletContext {
 
     @Override
     public RequestDispatcher getNamedDispatcher(String name) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return new ServletRequestDispatcher(servlets.get(name), null);
     }
 
     @Override
