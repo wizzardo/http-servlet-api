@@ -22,11 +22,13 @@ public class TestDispatcher extends WarTest {
         builder.addClass(Servlet2.class);
         builder.addClass(ServletInclude.class);
         builder.addClass(Servlet3.class);
+        builder.addClass(ServletIncludeByName.class);
         builder.getWebXmlBuilder()
                 .append(new WarBuilder.ServletMapping(ServletForward.class).url("/test_forwarded"))
                 .append(new WarBuilder.ServletMapping(Servlet2.class).url("/forward"))
                 .append(new WarBuilder.ServletMapping(ServletInclude.class).url("/test_included"))
                 .append(new WarBuilder.ServletMapping(Servlet3.class).url("/include"))
+                .append(new WarBuilder.ServletMapping(ServletIncludeByName.class).url("/test_included_name"))
         ;
     }
 
@@ -38,6 +40,10 @@ public class TestDispatcher extends WarTest {
 
 
         servletPath = "/test_included";
+        Assert.assertEquals("<b>included</b>", jettyRequest().get().asString());
+        Assert.assertEquals("<b>included</b>", myRequest().get().asString());
+
+        servletPath = "/test_included_name";
         Assert.assertEquals("<b>included</b>", jettyRequest().get().asString());
         Assert.assertEquals("<b>included</b>", myRequest().get().asString());
     }
@@ -72,7 +78,17 @@ public class TestDispatcher extends WarTest {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             resp.getWriter().write("included");
-            Assert.assertEquals("/test_included", req.getServletPath());
+            Assert.assertTrue(req.getServletPath().startsWith("/test_included"));
+        }
+    }
+
+    public static class ServletIncludeByName extends HttpServlet {
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            RequestDispatcher requestDispatcher = getServletContext().getNamedDispatcher("Servlet3");
+            resp.getWriter().write("<b>");
+            requestDispatcher.include(req, resp);
+            resp.getWriter().write("</b>");
         }
     }
 }
