@@ -27,7 +27,11 @@ public class ServletRequestDispatcher implements RequestDispatcher {
         req.setDispatcherType(DispatcherType.FORWARD);
 
         HttpResponse resp = (HttpResponse) response;
-        servletHolder.get().service(new DispatchedRequest(req, path), response);
+        if (path != null)
+            servletHolder.get().service(new DispatchedRequest(req, path), response);
+        else
+            servletHolder.get().service(req, response);
+
 
         if (!resp.isCommitted() && resp.hasWriter())
             resp.setBody(resp.getData());
