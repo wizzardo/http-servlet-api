@@ -26,6 +26,8 @@ public class TestDispatcher extends WarTest {
         builder.addClass(Servlet4.class);
         builder.addClass(ServletIncludeByName.class);
         builder.addClass(ServletForwardByName.class);
+        builder.addClass(ServletForwardRelative.class);
+        builder.addClass(Servlet5.class);
         builder.getWebXmlBuilder()
                 .append(new WarBuilder.ServletMapping(ServletForward.class).url("/test_forwarded"))
                 .append(new WarBuilder.ServletMapping(Servlet1.class).url("/forward"))
@@ -35,6 +37,8 @@ public class TestDispatcher extends WarTest {
                 .append(new WarBuilder.ServletMapping(Servlet4.class).url("/include_by_name"))
                 .append(new WarBuilder.ServletMapping(ServletIncludeByName.class).url("/test_included_name"))
                 .append(new WarBuilder.ServletMapping(ServletForwardByName.class).url("/test_forwarded_name"))
+                .append(new WarBuilder.ServletMapping(ServletForwardRelative.class).url("/relative/test_forward"))
+                .append(new WarBuilder.ServletMapping(Servlet5.class).url("/relative/forward"))
         ;
     }
 
@@ -56,6 +60,11 @@ public class TestDispatcher extends WarTest {
         servletPath = "/test_included_name";
         Assert.assertEquals("<b>included</b>", jettyRequest().get().asString());
         Assert.assertEquals("<b>included</b>", myRequest().get().asString());
+
+
+        servletPath = "/relative/test_forward";
+        Assert.assertEquals("relative forwarded", jettyRequest().get().asString());
+        Assert.assertEquals("relative forwarded", myRequest().get().asString());
     }
 
     public static class ServletForward extends HttpServlet {
@@ -123,6 +132,22 @@ public class TestDispatcher extends WarTest {
             resp.getWriter().write("<b>");
             requestDispatcher.include(req, resp);
             resp.getWriter().write("</b>");
+        }
+    }
+
+    public static class ServletForwardRelative extends HttpServlet {
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            RequestDispatcher requestDispatcher = req.getRequestDispatcher("forward");
+            requestDispatcher.forward(req, resp);
+        }
+    }
+
+    public static class Servlet5 extends HttpServlet {
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            resp.getWriter().write("relative forwarded");
+            Assert.assertEquals("/relative/forward", req.getServletPath());
         }
     }
 }
