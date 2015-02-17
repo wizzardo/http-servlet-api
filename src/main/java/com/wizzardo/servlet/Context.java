@@ -173,6 +173,10 @@ public class Context implements ServletContext {
         return new ServletRequestDispatcher(servletsMapping.get(path), path);
     }
 
+    public RequestDispatcher getRequestDispatcher(Path path) {
+        return new ServletRequestDispatcher(servletsMapping.get(null, path), path.toString());
+    }
+
     @Override
     public RequestDispatcher getNamedDispatcher(String name) {
         return new ServletRequestDispatcher(servlets.get(name), null);

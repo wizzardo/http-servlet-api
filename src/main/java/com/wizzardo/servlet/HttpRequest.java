@@ -379,6 +379,11 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public RequestDispatcher getRequestDispatcher(String s) {
+        if (!s.startsWith("/")) {
+            Path relative = servletPath.length() > 0 ? servletPath.subPath(0, servletPath.length() - 1) : servletPath;
+            relative = relative.add(s);
+            return context.getRequestDispatcher(relative);
+        }
         return context.getRequestDispatcher(s);
     }
 
