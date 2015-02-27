@@ -222,7 +222,12 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 if (loadOnStartup != null)
                     los = Integer.parseInt(loadOnStartup.text());
 
-                ServletHolder servletHolder = new ServletHolder(servlet, servletConfig, context, los, servletCounter++);
+                boolean isAsync = false;
+                Node asyncSupported = servletNode.get("async-supported");
+                if (asyncSupported != null)
+                    isAsync = Boolean.parseBoolean(asyncSupported.text());
+
+                ServletHolder servletHolder = new ServletHolder(servlet, servletConfig, context, los, servletCounter++, isAsync);
                 if (servletHolder.loadOnStartup > 0)
                     servletsToInit.add(servletHolder);
 

@@ -30,9 +30,11 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
     private Context context;
     private Cookie[] cookies;
     private boolean isAsyncStarted = false;
+    private AsyncContext asyncContext;
 
     protected Path servletPath;
     protected DispatcherType dispatcherType = DispatcherType.REQUEST;
+    protected ServletHolder currentServlet;
 
     public HttpRequest(ServletHttpConnection connection) {
         super(connection);
@@ -40,6 +42,10 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     void setContext(Context context) {
         this.context = context;
+    }
+
+    void setCurrentServlet(ServletHolder holder) {
+        currentServlet = holder;
     }
 
     void setServletPath(Path path) {
@@ -419,12 +425,24 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public AsyncContext startAsync() throws IllegalStateException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (!isAsyncSupported())
+            throw new IllegalStateException("Async is not supported");
+        if (isAsyncStarted())
+            throw new IllegalStateException("Async already started");
+
+        asyncContext = new AsyncContext(this, connection.getResponse(), true);
+        return asyncContext;
     }
 
     @Override
     public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (!isAsyncSupported())
+            throw new IllegalStateException("Async is not supported");
+        if (isAsyncStarted())
+            throw new IllegalStateException("Async already started");
+
+        asyncContext = new AsyncContext(servletRequest, servletResponse, servletRequest == this && servletResponse == connection.getResponse());
+        return asyncContext;
     }
 
     @Override
@@ -434,12 +452,15 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
 
     @Override
     public boolean isAsyncSupported() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return currentServlet.isAsyncSupported();
     }
 
     @Override
     public AsyncContext getAsyncContext() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (!isAsyncStarted())
+            throw new IllegalStateException("Async is not started");
+
+        return asyncContext;
     }
 
     @Override

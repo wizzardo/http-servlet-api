@@ -16,18 +16,20 @@ public class ServletHolder {
     final int loadOnStartup;
     final int order;
     final String name;
+    private boolean asyncSupported;
 
-    public ServletHolder(Servlet servlet, ServletConfig servletConfig, Context context, int loadOnStartup, int order) {
+    public ServletHolder(Servlet servlet, ServletConfig servletConfig, Context context, int loadOnStartup, int order, boolean asyncSupported) {
         this.servlet = servlet;
         this.servletConfig = servletConfig;
         this.context = context;
         this.loadOnStartup = loadOnStartup;
         this.order = order;
         this.name = servletConfig.getServletName();
+        this.asyncSupported = asyncSupported;
     }
 
     public ServletHolder(Servlet servlet, ServletConfig servletConfig, Context context) {
-        this(servlet, servletConfig, context, -1, -1);
+        this(servlet, servletConfig, context, -1, -1, false);
     }
 
     public Servlet get() throws ServletException {
@@ -45,5 +47,9 @@ public class ServletHolder {
                 }
             }
         }
+    }
+
+    public boolean isAsyncSupported() {
+        return asyncSupported;
     }
 }
