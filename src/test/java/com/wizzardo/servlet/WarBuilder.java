@@ -105,6 +105,9 @@ public class WarBuilder {
                 root.add(servlet);
                 servlet.add(new Node("servlet-name").addText(servletMapping.servletName));
                 servlet.add(new Node("servlet-class").addText(servletMapping.servletClass));
+                if (servletMapping.isAsyncSupported)
+                    servlet.add(new Node("async-supported").addText("true"));
+
                 if (servletMapping.order >= 0)
                     servlet.add(new Node("load-on-startup").addText(String.valueOf(servletMapping.order)));
 
@@ -158,6 +161,7 @@ public class WarBuilder {
         private Set<String> urlPatterns = new LinkedHashSet<>();
         private Map<String, String> params = new LinkedHashMap<>();
         private int order = -1;
+        private boolean isAsyncSupported = false;
 
         public ServletMapping(Class<? extends Servlet> servletClass, String servletName) {
             this.servletClass = servletClass.getName();
@@ -184,6 +188,11 @@ public class WarBuilder {
 
         public ServletMapping loadOnStartup(int i) {
             order = i;
+            return this;
+        }
+
+        public ServletMapping enableAsync() {
+            isAsyncSupported = true;
             return this;
         }
     }
