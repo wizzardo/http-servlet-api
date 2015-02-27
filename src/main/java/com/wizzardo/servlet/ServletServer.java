@@ -46,8 +46,6 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
             httpResponse.setRequest(httpRequest);
 
             processRequest(httpRequest, httpResponse);
-
-            finishHandling(connection);
         } catch (Exception t) {
             t.printStackTrace();
             //TODO render error page
