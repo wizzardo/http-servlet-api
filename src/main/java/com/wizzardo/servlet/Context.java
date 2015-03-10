@@ -144,7 +144,7 @@ public class Context implements ServletContext {
 
     @Override
     public String getMimeType(String file) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return server.getMimeProvider().getMimeType(file);
     }
 
     @Override
