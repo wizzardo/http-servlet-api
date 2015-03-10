@@ -24,8 +24,7 @@ public class Context implements ServletContext {
     private static final int MAJOR_SERVLET_VERSION = 3;
     private static final int MINOR_SERVLET_VERSION = 0;
 
-    protected String host;
-    protected int port;
+    protected ServletServer<? extends ServletHttpConnection> server;
     protected String contextPath;
     protected File contextDir;
     protected UrlMapping<ServletHolder> servletsMapping = new UrlMapping<>();
@@ -38,9 +37,8 @@ public class Context implements ServletContext {
     protected Map<String, ServletHolder> servlets = new ConcurrentHashMap<>();
     protected boolean initialized = false;
 
-    public Context(String host, int port, String contextPath) {
-        this.host = host;
-        this.port = port;
+    public Context(ServletServer<? extends ServletHttpConnection> server, String contextPath) {
+        this.server = server;
         this.contextPath = contextPath;
     }
 
@@ -53,11 +51,11 @@ public class Context implements ServletContext {
     }
 
     public String getHost() {
-        return host;
+        return server.getHost();
     }
 
     public int getPort() {
-        return port;
+        return server.getPort();
     }
 
     public boolean isSecure() {
@@ -84,9 +82,9 @@ public class Context implements ServletContext {
         else
             sb.append("http://");
 
-        sb.append(host);
-        if ((!isSecure() && port != 80) || (isSecure() && port != 443))
-            sb.append(":").append(port);
+        sb.append(server.getHost());
+        if ((!isSecure() && server.getPort() != 80) || (isSecure() && server.getPort() != 443))
+            sb.append(":").append(server.getPort());
 
         sb.append(path);
         return sb.toString();
@@ -121,7 +119,7 @@ public class Context implements ServletContext {
 
     @Override
     public ServletContext getContext(String uripath) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return server.getContext(uripath);
     }
 
     @Override

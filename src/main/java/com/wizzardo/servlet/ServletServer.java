@@ -120,13 +120,19 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
     protected Context getContext(Path path) {
         if (path.length() == 0)
             return rootContext;
-        else {
-            Context context = contexts.get(path.getPart(0));
-            if (context == null)
-                return rootContext;
-            else
-                return context;
-        }
+        return findContext(path.getPart(0));
+    }
+
+    protected Context getContext(String path) {
+        if (path.length() == 0 || path.equals("/"))
+            return rootContext;
+
+        return findContext(path.split("/", 3)[1]);
+    }
+
+    protected Context findContext(String context) {
+        Context c = contexts.get(context);
+        return c == null ? rootContext : c;
     }
 
     protected Context getOrCreateContext(String contextPath) {
@@ -158,7 +164,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         if (contextPath.equals("/"))
             contextPath = "";
 
-        Context context = new Context(getHost(), getPort(), "/" + contextPath);
+        Context context = new Context(this, "/" + contextPath);
         if (contextPath.isEmpty())
             rootContext = context;
         else if (contexts.putIfAbsent(contextPath, context) != null)
