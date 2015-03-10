@@ -1,5 +1,6 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.http.AbstractHttpServer;
 import com.wizzardo.http.HttpConnection;
 import com.wizzardo.servlet.streams.ServletEpollInputStream;
 import com.wizzardo.servlet.streams.ServletEpollOutputStream;
@@ -8,10 +9,10 @@ import com.wizzardo.servlet.streams.ServletEpollOutputStream;
  * @author: wizzardo
  * Date: 05.11.14
  */
-public class ServletHttpConnection extends HttpConnection<HttpRequest, HttpResponse, ServletEpollInputStream, ServletEpollOutputStream> {
+public class ServletHttpConnection extends HttpConnection<ServletServer, HttpRequest, HttpResponse, ServletEpollInputStream, ServletEpollOutputStream> {
 
-    public ServletHttpConnection(int fd, int ip, int port) {
-        super(fd, ip, port);
+    public ServletHttpConnection(int fd, int ip, int port, ServletServer server) {
+        super(fd, ip, port, server);
     }
 
     @Override

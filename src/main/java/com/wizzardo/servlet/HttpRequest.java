@@ -430,7 +430,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
         if (isAsyncStarted())
             throw new IllegalStateException("Async already started");
 
-        asyncContext = new AsyncContext(this, connection.getResponse(), true);
+        asyncContext = new AsyncContext(connection, this, connection.getResponse(), true);
         return asyncContext;
     }
 
@@ -441,7 +441,7 @@ public class HttpRequest extends Request<ServletHttpConnection> implements HttpS
         if (isAsyncStarted())
             throw new IllegalStateException("Async already started");
 
-        asyncContext = new AsyncContext(servletRequest, servletResponse, servletRequest == this && servletResponse == connection.getResponse());
+        asyncContext = new AsyncContext(connection, servletRequest, servletResponse, servletRequest == this && servletResponse == connection.getResponse());
         return asyncContext;
     }
 

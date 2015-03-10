@@ -1,5 +1,8 @@
 package com.wizzardo.servlet;
 
+import com.wizzardo.epoll.ByteBufferProvider;
+import com.wizzardo.http.HttpConnection;
+
 import javax.servlet.*;
 
 /**
@@ -12,7 +15,7 @@ public class AsyncContext implements javax.servlet.AsyncContext {
     private final ServletResponse response;
     private final boolean original;
 
-    AsyncContext(ServletRequest request, ServletResponse response, boolean original) {
+    AsyncContext(HttpConnection connection, ServletRequest request, ServletResponse response, boolean original) {
         this.request = request;
         this.response = response;
         this.original = original;
@@ -50,7 +53,7 @@ public class AsyncContext implements javax.servlet.AsyncContext {
 
     @Override
     public void complete() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+
     }
 
     @Override

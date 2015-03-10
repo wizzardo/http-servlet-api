@@ -36,7 +36,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
 
     @Override
     protected T createConnection(int fd, int ip, int port) {
-        return (T) new ServletHttpConnection(fd, ip, port);
+        return (T) new ServletHttpConnection(fd, ip, port, this);
     }
 
     protected void handle(T connection) {
@@ -55,6 +55,14 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    protected void finishHandling(T connection) throws IOException {
+        if (connection.getRequest().isAsyncStarted())
+            return;
+
+        super.finishHandling(connection);
     }
 
     @Override
