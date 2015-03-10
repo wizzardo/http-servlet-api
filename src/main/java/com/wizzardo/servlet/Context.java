@@ -136,12 +136,12 @@ public class Context implements ServletContext {
 
     @Override
     public int getEffectiveMajorVersion() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return getMajorVersion();
     }
 
     @Override
     public int getEffectiveMinorVersion() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return getMinorVersion();
     }
 
     @Override
