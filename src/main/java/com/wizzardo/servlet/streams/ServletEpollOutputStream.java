@@ -1,6 +1,8 @@
 package com.wizzardo.servlet.streams;
 
+import com.wizzardo.epoll.ByteBufferProvider;
 import com.wizzardo.http.EpollOutputStream;
+import com.wizzardo.servlet.ByteBufferProviderHolder;
 import com.wizzardo.servlet.HttpRequest;
 import com.wizzardo.servlet.ServletHttpConnection;
 
@@ -23,15 +25,15 @@ public class ServletEpollOutputStream extends EpollOutputStream {
 
     @Override
     protected void waitFor() {
-        if (!asyncServletOutputStream.request.isAsyncStarted())
+        if (asyncServletOutputStream.listener == null)
             super.waitFor();
     }
 
     @Override
     protected void wakeUp() {
-        if (!asyncServletOutputStream.request.isAsyncStarted())
+        if (asyncServletOutputStream.listener == null)
             super.wakeUp();
-        else if (asyncServletOutputStream.listener != null)
+        else
             asyncServletOutputStream.listener.onWritePossible();
     }
 
@@ -41,6 +43,14 @@ public class ServletEpollOutputStream extends EpollOutputStream {
 
     public boolean isReady() {
         return !waiting;
+    }
+
+    @Override
+    protected ByteBufferProvider getByteBufferProvider() {
+        if (Thread.currentThread() instanceof ByteBufferProvider)
+            return super.getByteBufferProvider();
+        else
+            return ByteBufferProviderHolder.get();
     }
 
     public class AsyncServletOutputStream extends ServletOutputStream {
