@@ -88,6 +88,8 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         httpResponse.setContext(context);
 
         ServletHolder servletHolder = context.getServletHolder(httpRequest, path);
+        httpRequest.setCurrentServlet(servletHolder);
+
         ChainUrlMapping.Chain<Filter> filters = context.getFiltersMapping().get(httpRequest, path);
         if (filters != null) {
             Iterator<Filter> filterIterator = filters.iterator();
@@ -105,7 +107,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
         } else
             processServlet(servletHolder.get(), httpRequest, httpResponse);
 
-        if (httpResponse.hasWriter())
+        if (!httpRequest.isAsyncStarted() && httpResponse.hasWriter())
             httpResponse.setBody(httpResponse.getData());
     }
 
