@@ -10,10 +10,7 @@ import com.wizzardo.http.response.Status;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -247,13 +244,19 @@ public class HttpResponse extends Response implements HttpServletResponse {
 
     @Override
     public PrintWriter getWriter() throws IOException {
-        if (buffer == null)
-            buffer = new ByteArrayOutputStream();
-
         if (writer == null)
-            writer = new PrintWriter(new OutputStreamWriter(buffer, charset != null ? Charset.forName(charset) : StandardCharsets.UTF_8), true);
+            writer = new PrintWriter(new OutputStreamWriter(provideOut(), charset != null ? Charset.forName(charset) : StandardCharsets.UTF_8), true);
 
         return writer;
+    }
+
+    protected OutputStream provideOut() throws IOException {
+        if (request.isAsyncStarted())
+            return getOutputStream();
+
+        if (buffer == null)
+            buffer = new ByteArrayOutputStream();
+        return buffer;
     }
 
     @Override
