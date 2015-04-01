@@ -47,7 +47,7 @@ public class ResponseTest extends ServerTest {
             resp.getWriter().write("ok");
         };
         test(request -> request.get().asString());
-        test(request -> request.get().header("Set-Cookie"));
+        test(request -> request.get().header("Set-Cookie").replace('-', ' '));
 
         servlet.get = (req, resp) -> {
             Cookie cookie = new Cookie("foo", "bar");
@@ -56,7 +56,7 @@ public class ResponseTest extends ServerTest {
             resp.getWriter().write("ok");
         };
         test(request -> request.get().asString());
-        test(request -> request.get().header("Set-Cookie"));
+        test(request -> request.get().header("Set-Cookie").replace('-', ' '));
 
         servlet.get = (req, resp) -> {
             Cookie cookie = new Cookie("foo", "bar");
@@ -65,7 +65,7 @@ public class ResponseTest extends ServerTest {
             resp.getWriter().write("ok");
         };
         test(request -> request.get().asString());
-        test(request -> request.get().header("Set-Cookie"));
+        test(request -> request.get().header("Set-Cookie").replace('-', ' '));
 
         servlet.get = (req, resp) -> {
             Cookie cookie = new Cookie("foo", "bar");
@@ -74,7 +74,7 @@ public class ResponseTest extends ServerTest {
             resp.getWriter().write("ok");
         };
         test(request -> request.get().asString());
-        test(request -> request.get().header("Set-Cookie"));
+        test(request -> request.get().header("Set-Cookie").replace('-', ' '));
 
         servlet.get = (req, resp) -> {
             Cookie cookie = new Cookie("foo", "bar");
@@ -83,7 +83,7 @@ public class ResponseTest extends ServerTest {
             resp.getWriter().write("ok");
         };
         test(request -> request.get().asString());
-        test(request -> request.get().header("Set-Cookie"));
+        test(request -> request.get().header("Set-Cookie").replace('-', ' '));
 
         servlet.get = (req, resp) -> {
             Cookie cookie = new Cookie("foo", "bar");
@@ -92,7 +92,7 @@ public class ResponseTest extends ServerTest {
             resp.getWriter().write("ok");
         };
         test(request -> request.get().asString());
-        test(request -> request.get().header("Set-Cookie"));
+        test(request -> request.get().header("Set-Cookie").replace('-', ' '));
 
         servlet.get = (req, resp) -> {
             Cookie cookie = new Cookie("foo", "bar");
@@ -101,7 +101,7 @@ public class ResponseTest extends ServerTest {
             resp.getWriter().write("ok");
         };
         test(request -> request.get().asString());
-        test(request -> request.get().header("Set-Cookie"));
+        test(request -> request.get().header("Set-Cookie").replace('-', ' '));
 
         servlet.get = (req, resp) -> {
             Cookie cookie = new Cookie("foo", "bar");
@@ -110,7 +110,7 @@ public class ResponseTest extends ServerTest {
             resp.getWriter().write("ok");
         };
         test(request -> request.get().asString());
-        test(request -> request.get().header("Set-Cookie"));
+        test(request -> request.get().header("Set-Cookie").replace('-', ' '));
     }
 
     @Test
