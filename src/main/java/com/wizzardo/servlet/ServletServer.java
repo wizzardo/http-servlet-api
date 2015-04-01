@@ -1,8 +1,8 @@
 package com.wizzardo.servlet;
 
-import com.wizzardo.http.ChainUrlMapping;
 import com.wizzardo.http.HttpServer;
-import com.wizzardo.http.Path;
+import com.wizzardo.http.mapping.ChainUrlMapping;
+import com.wizzardo.http.mapping.Path;
 import com.wizzardo.http.response.Status;
 import com.wizzardo.tools.io.ZipTools;
 import com.wizzardo.tools.misc.UncheckedThrow;

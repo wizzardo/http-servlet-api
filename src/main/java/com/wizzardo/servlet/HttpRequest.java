@@ -1,7 +1,7 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.http.MultiValue;
-import com.wizzardo.http.Path;
+import com.wizzardo.http.mapping.Path;
 import com.wizzardo.http.request.MultiPartEntry;
 import com.wizzardo.http.request.Request;
 

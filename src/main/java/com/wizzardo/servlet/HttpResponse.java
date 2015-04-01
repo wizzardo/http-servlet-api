@@ -1,7 +1,7 @@
 package com.wizzardo.servlet;
 
 import com.wizzardo.epoll.readable.ReadableData;
-import com.wizzardo.http.Path;
+import com.wizzardo.http.mapping.Path;
 import com.wizzardo.http.request.Header;
 import com.wizzardo.http.response.CookieBuilder;
 import com.wizzardo.http.response.Response;
@@ -124,7 +124,7 @@ public class HttpResponse extends Response implements HttpServletResponse {
         if (isCommitted())
             throw new IllegalStateException("the response has already been committed");
 
-        setHeader(Header.KEY_CONTENT_TYPE, Header.VALUE_CONTENT_TYPE_HTML_UTF8);
+        setHeader(Header.KEY_CONTENT_TYPE, Header.VALUE_HTML_UTF8);
         setBody(msg); //todo: render custom error page
         status = sc;
 
