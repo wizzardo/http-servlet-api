@@ -147,9 +147,9 @@ public class ResponseTest extends ServerTest {
             OutputStream out = resp.getOutputStream();
             out.write(data);
         };
-        test(request -> MD5.getMD5AsString(request.get().asBytes()));
-        test(request -> MD5.getMD5AsString(request.get().asBytes()));
-        test(request -> MD5.getMD5AsString(request.get().asBytes()));
+        test(request -> MD5.create().update(request.get().asBytes()).asString());
+        test(request -> MD5.create().update(request.get().asBytes()).asString());
+        test(request -> MD5.create().update(request.get().asBytes()).asString());
 
 
         servlet.get = (req, resp) -> {

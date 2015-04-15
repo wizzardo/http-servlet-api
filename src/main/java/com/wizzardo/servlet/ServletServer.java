@@ -5,7 +5,7 @@ import com.wizzardo.http.mapping.ChainUrlMapping;
 import com.wizzardo.http.mapping.Path;
 import com.wizzardo.http.response.Status;
 import com.wizzardo.tools.io.ZipTools;
-import com.wizzardo.tools.misc.UncheckedThrow;
+import com.wizzardo.tools.misc.Unchecked;
 import com.wizzardo.tools.xml.Node;
 
 import javax.servlet.*;
@@ -284,7 +284,7 @@ public class ServletServer<T extends ServletHttpConnection> extends HttpServer<T
                 holder.init();
 
         } catch (Exception e) {
-            throw UncheckedThrow.rethrow(e);
+            throw Unchecked.rethrow(e);
         }
     }
 }

@@ -3,13 +3,12 @@ package com.wizzardo.servlet;
 import com.wizzardo.http.mapping.ChainUrlMapping;
 import com.wizzardo.http.mapping.Path;
 import com.wizzardo.http.mapping.UrlMapping;
-import com.wizzardo.tools.misc.UncheckedThrow;
+import com.wizzardo.tools.misc.Unchecked;
 
 import javax.servlet.*;
 import javax.servlet.descriptor.JspConfigDescriptor;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -159,11 +158,7 @@ public class Context implements ServletContext {
 
     @Override
     public InputStream getResourceAsStream(String path) {
-        try {
-            return new FileInputStream(new File(contextDir, path));
-        } catch (FileNotFoundException e) {
-            throw UncheckedThrow.rethrow(e);
-        }
+        return Unchecked.call(() -> new FileInputStream(new File(contextDir, path)));
     }
 
     @Override

@@ -146,12 +146,12 @@ public class RequestTest extends ServerTest {
 
     @Test
     public void inputStream() throws IOException {
-        servlet.post = (req, resp) -> resp.getWriter().write(MD5.getMD5AsString(req.getInputStream()));
+        servlet.post = (req, resp) -> resp.getWriter().write(MD5.create().update(req.getInputStream()).asString());
         test(request -> request.data("some data".getBytes(), ContentType.BINARY).post().asString());
 
         byte[] data = new byte[10 * 1024 * 1024];
         new Random().nextBytes(data);
-        servlet.post = (request, response) -> response.getWriter().write(MD5.getMD5AsString(request.getInputStream()));
+        servlet.post = (request, response) -> response.getWriter().write(MD5.create().update(request.getInputStream()).asString());
         test(request -> request.data(data, ContentType.BINARY).post().asString());
     }
 }
